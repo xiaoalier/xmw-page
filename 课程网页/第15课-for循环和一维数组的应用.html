@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第15课 for循环和一维数组的应用 - 信奥C++星辰班</title>
+  <style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 15px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+    /* ===== 本课新增：数组格子 ===== */
+    .cell-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cell {
+      width: 56px; height: 60px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: "Consolas", monospace; transition: all 0.2s ease;
+    }
+    .cell .v { font-size: 16px; font-weight: 700; }
+    .cell .ix { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .cell.active { border-color: var(--accent); background: rgba(76,194,255,0.15); box-shadow: 0 0 0 3px rgba(76,194,255,0.18); }
+    .cell.done { border-color: rgba(126,231,135,0.45); }
+    .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .stat-chip {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px 14px; font-size: 14px;
+    }
+    .stat-chip b { font-family: "Consolas", monospace; color: var(--accent-3); }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>第15课 · for循环和一维数组的应用</h1>
+      <p class="subtitle">用 for 循环遍历一维数组：求和、统计、找最值</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 一、知识点 -->
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>为什么要用 for 遍历数组</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">数组下标从 0 开始</div>
+          <p>存了 <code>n</code> 个元素的数组，合法下标是 <code>0 ~ n-1</code>。第 1 个元素是 <code>a[0]</code>，不是 <code>a[1]</code>。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">for 让下标依次变化</div>
+          <p><code>for(int i=0; i&lt;n; i++)</code> 会让 <code>i</code> 从 0 一路走到 n-1，正好把每个格子访问一遍。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">下标和值同步</div>
+          <p>循环时 <code>i</code> 是"第几格"，<code>a[i]</code> 是"这一格里装的值"。两者一起变化。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧩</span>遍历数组的标准写法</div>
+        <div class="anno">
+<pre><span class="k">int</span> a[<span class="s">5</span>] = {<span class="s">10</span>, <span class="s">20</span>, <span class="s">30</span>, <span class="s">40</span>, <span class="s">50</span>};
+<span class="k">int</span> n = <span class="s">5</span>;                    <span class="cm">// 一共有 5 个元素</span>
+
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">0</span>; i &lt; n; i++) {
+    cout &lt;&lt; a[i] &lt;&lt; endl;      <span class="cm">// 依次输出 a[0]、a[1]……a[4]</span>
+}</pre>
+        </div>
+        <p class="mem-note">⚠ <b>易错</b>：循环条件写成 <code>i &lt;= n</code> 就多访问了 <code>a[n]</code>，越界之后结果不受控。记住 <code>i &lt; n</code>。</p>
+      </div>
+    </section>
+
+    <!-- 二、常见应用 -->
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>遍历数组能做什么</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">求和</div>
+          <p>准备一个 <code>sum = 0</code>，每访问一个元素就 <code>sum += a[i]</code>，循环结束 sum 就是总和。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">统计个数</div>
+          <p>满足条件就 <code>cnt++</code>。比如统计偶数个数：<code>if (a[i] % 2 == 0) cnt++;</code></p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">找最值</div>
+          <p>先把 <code>max = a[0]</code>，然后从第 2 个开始比，谁大就更新 <code>max = a[i]</code>。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🎯</span>三种套路，核心都是"一个一个看过去"</div>
+        <div class="anno">
+<pre><span class="cm">// 求和</span>
+<span class="k">int</span> sum = <span class="s">0</span>;
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">0</span>; i &lt; n; i++) sum += a[i];
+
+<span class="cm">// 统计偶数个数</span>
+<span class="k">int</span> cnt = <span class="s">0</span>;
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">0</span>; i &lt; n; i++)
+    <span class="k">if</span> (a[i] % <span class="s">2</span> == <span class="s">0</span>) cnt++;
+
+<span class="cm">// 找最大值</span>
+<span class="k">int</span> mx = a[<span class="s">0</span>];
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">1</span>; i &lt; n; i++)
+    <span class="k">if</span> (a[i] &gt; mx) mx = a[i];</pre>
+        </div>
+        <p class="mem-note">💡 找最大值从 <code>i = 1</code> 开始比就可以，因为 <code>mx</code> 一开始就是 <code>a[0]</code>，不用自己跟自己比。</p>
+      </div>
+    </section>
+
+    <!-- 三、可视化器 -->
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>可视化器：一步步看 for 怎么遍历数组</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔢</span>输入数组，点「下一步」观察下标 i 与 a[i] 如何同步变化</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field">
+              <label>数组内容（空格或逗号分隔）</label>
+              <input id="l15arr" value="4 8 15 16 23 42">
+            </div>
+            <div class="field">
+              <label>循环变量 i 从哪里开始？</label>
+              <select id="l15start">
+                <option value="0">i 从 0 开始（标准下标写法）</option>
+                <option value="1">i 从 1 开始（从 1 计数）</option>
+              </select>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="l15step">下一步 ▶</button>
+              <button class="control-btn secondary" id="l15auto">自动播放</button>
+              <button class="control-btn secondary" id="l15reset">重置</button>
+            </div>
+            <div class="conv-msg" id="l15msg">输入数组，点「下一步」逐格遍历…</div>
+            <div class="sim-arr-label" style="margin-top: 6px;">对应代码</div>
+            <div class="lp-code"><pre id="l15code">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">数组 a 与下标 i</div>
+            <div class="cell-row" id="l15cells"></div>
+            <div class="stat-row" id="l15stats"></div>
+            <div class="step-final" id="l15res" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 四、代码 -->
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="print">遍历输出</div>
+          <div class="code-tab" data-tab="sum">数组求和</div>
+          <div class="code-tab" data-tab="max">找最大值</div>
+          <div class="code-tab" data-tab="even">统计偶数</div>
+          <div class="code-tab" data-tab="trap">易错对比</div>
+        </div>
+
+        <div class="code-content active" id="tab-print">
+          <div class="code-block">
+<pre><span class="comment">// 用 for 把数组从头到尾输出一遍</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n;
+    cin &gt;&gt; n;
+    <span class="type">int</span> a[<span class="number">100</span>];
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) {
+        cout &lt;&lt; a[i] &lt;&lt; <span class="string">" "</span>;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-sum">
+          <div class="code-block">
+<pre><span class="comment">// 求和：sum 从 0 开始，每格累加</span>
+<span class="type">int</span> sum = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) {
+    sum += a[i];
+}
+cout &lt;&lt; sum &lt;&lt; endl;
+
+<span class="comment">// 输入：5   1 2 3 4 5</span>
+<span class="comment">// 输出：15</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-max">
+          <div class="code-block">
+<pre><span class="comment">// 找最大值：mx 先等于第一个元素</span>
+<span class="type">int</span> mx = a[<span class="number">0</span>];
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) {
+    <span class="keyword">if</span> (a[i] &gt; mx) mx = a[i];
+}
+cout &lt;&lt; <span class="string">"最大值是 "</span> &lt;&lt; mx &lt;&lt; endl;
+
+<span class="comment">// 输入：6   4 8 15 16 23 42</span>
+<span class="comment">// 输出：最大值是 42</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-even">
+          <div class="code-block">
+<pre><span class="comment">// 统计偶数个数：满足条件就 +1</span>
+<span class="type">int</span> cnt = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) {
+    <span class="keyword">if</span> (a[i] % <span class="number">2</span> == <span class="number">0</span>) cnt++;
+}
+cout &lt;&lt; <span class="string">"偶数有 "</span> &lt;&lt; cnt &lt;&lt; <span class="string">" 个"</span> &lt;&lt; endl;
+
+<span class="comment">// 输入：6   4 8 15 16 23 42</span>
+<span class="comment">// 输出：偶数有 4 个</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-trap">
+          <div class="code-block">
+<pre><span class="comment">// ❌ 错误 1：循环多跑一格，访问 a[n] 越界</span>
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt;= n; i++)   <span class="comment">// i 会等于 n，越界！</span>
+
+<span class="comment">// ✅ 正确：i &lt; n</span>
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++)
+
+<span class="comment">// ❌ 错误 2：求和变量没初始化</span>
+<span class="type">int</span> sum;                 <span class="comment">// 里面是随机值</span>
+<span class="keyword">for</span> (...) sum += a[i];   <span class="comment">// 结果会错</span>
+
+<span class="comment">// ✅ 正确：sum 初始化为 0</span>
+<span class="type">int</span> sum = <span class="number">0</span>;</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 五、小测验 -->
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 六、小贴士 -->
+    <div class="tips-section">
+      <h3>💡 小贴士</h3>
+      <ul>
+        <li><strong>下标从 0 开始</strong>：n 个元素，合法下标是 <code>0 ~ n-1</code>，循环写 <code>i &lt; n</code>。</li>
+        <li><strong>别越界</strong>：访问 <code>a[n]</code> 属于越界，结果不可控，一定要避免。</li>
+        <li><strong>累加先清零</strong>：求和/计数的变量，定义时就写成 <code>= 0</code>。</li>
+        <li><strong>找最大值先拿第一格</strong>：<code>mx = a[0]</code>，再从 <code>i = 1</code> 开始比较。</li>
+        <li><strong>i 是下标，a[i] 是值</strong>：循环里两者一起变，看清楚谁是谁。</li>
+        <li><strong>输入数组也常用 for</strong>：<code>for (i=0; i&lt;n; i++) cin &gt;&gt; a[i];</code></li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="container">
+      <p>信奥 C++ 星辰班 · 第15课 for循环和一维数组的应用</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof history !== "undefined" && "scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    /* ================= 可视化器：for 遍历数组 ================= */
+    var L15 = { arr: [], start: 0, idx: -1, sum: 0, mx: 0, even: 0, timer: null, done: false };
+
+    function l15Parse() {
+      var raw = document.getElementById("l15arr").value;
+      var parts = raw.split(/[\s,，]+/).filter(function (s) { return s !== ""; });
+      var out = [];
+      parts.forEach(function (p) {
+        var v = parseInt(p, 10);
+        if (!isNaN(v)) out.push(v);
+      });
+      return out;
+    }
+
+    function l15RenderCode() {
+      var start = L15.start;
+      var codeLines = [
+        "int a[" + L15.arr.length + "] = {" + L15.arr.join(", ") + "};",
+        "int n = " + L15.arr.length + ";",
+        "",
+        "int sum = 0;",
+        "int mx = a[" + start + "];",
+        "int cnt = 0;",
+        "",
+        "for (int i = " + start + "; i < n; i++) {",
+        "    sum += a[i];",
+        "    if (a[i] > mx) mx = a[i];",
+        "    if (a[i] % 2 == 0) cnt++;",
+        "}",
+        "cout << sum << \" \" << mx << \" \" << cnt;"
+      ];
+      document.getElementById("l15code").textContent = codeLines.join("\n");
+    }
+
+    function l15Render() {
+      var box = document.getElementById("l15cells");
+      box.innerHTML = "";
+      L15.arr.forEach(function (v, k) {
+        var d = document.createElement("div");
+        d.className = "cell";
+        if (k < L15.idx) d.className += " done";
+        if (k === L15.idx) d.className += " active";
+        d.innerHTML = '<span class="v">' + v + "</span><span class=\"ix\">a[" + k + "]</span>";
+        box.appendChild(d);
+      });
+      var stats = document.getElementById("l15stats");
+      var cur = L15.idx >= 0 && L15.idx < L15.arr.length ? L15.arr[L15.idx] : null;
+      stats.innerHTML =
+        '<div class="stat-chip">当前 i = <b>' + (L15.idx < 0 ? "-" : L15.idx) + "</b></div>" +
+        '<div class="stat-chip">a[i] = <b>' + (cur === null ? "-" : cur) + "</b></div>" +
+        '<div class="stat-chip">sum = <b>' + L15.sum + "</b></div>" +
+        '<div class="stat-chip">mx = <b>' + (L15.idx < 0 ? "-" : L15.mx) + "</b></div>" +
+        '<div class="stat-chip">偶数 cnt = <b>' + L15.even + "</b></div>";
+    }
+
+    function l15Reset() {
+      if (L15.timer) { clearInterval(L15.timer); L15.timer = null; }
+      L15.arr = l15Parse();
+      L15.start = parseInt(document.getElementById("l15start").value, 10);
+      L15.idx = -1;
+      L15.sum = 0;
+      L15.even = 0;
+      L15.mx = L15.arr.length ? L15.arr[L15.start] : 0;
+      L15.done = false;
+      document.getElementById("l15res").style.display = "none";
+      document.getElementById("l15msg").textContent =
+        L15.arr.length ? "数组已就绪，共 " + L15.arr.length + " 个元素，点「下一步」开始遍历…" : "没有解析到数字，请重新输入数组。";
+      l15RenderCode();
+      l15Render();
+    }
+
+    function l15Step() {
+      if (L15.done) return;
+      if (L15.idx < L15.start) {
+        L15.idx = L15.start;
+      } else {
+        L15.idx++;
+        if (L15.idx >= L15.arr.length) { l15Finish(); return; }
+      }
+      var v = L15.arr[L15.idx];
+      L15.sum += v;
+      if (v > L15.mx) L15.mx = v;
+      if (v % 2 === 0) L15.even++;
+      document.getElementById("l15msg").textContent =
+        "i = " + L15.idx + "，取到 a[" + L15.idx + "] = " + v + "，累加进 sum。";
+      l15Render();
+      if (L15.idx >= L15.arr.length - 1) l15Finish();
+    }
+
+    function l15Finish() {
+      L15.done = true;
+      if (L15.timer) { clearInterval(L15.timer); L15.timer = null; }
+      var res = document.getElementById("l15res");
+      res.style.display = "block";
+      res.innerHTML = "遍历结束：总和 <b>" + L15.sum + "</b>，最大值 <b>" + L15.mx + "</b>，偶数 <b>" + L15.even + "</b> 个";
+      document.getElementById("l15msg").textContent = "循环跑完了，最后 i 越界，循环条件不再成立，结束。";
+    }
+
+    function l15Auto() {
+      if (L15.timer) { clearInterval(L15.timer); L15.timer = null; return; }
+      if (L15.done) l15Reset();
+      L15.timer = setInterval(function () {
+        if (L15.done) { clearInterval(L15.timer); L15.timer = null; return; }
+        l15Step();
+      }, 700);
+    }
+
+    /* ================= 代码标签 ================= */
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    /* ================= 小测验 ================= */
+    var QUIZ_BANK = [
+      { type: "choice", q: "数组 int a[5]; 的合法下标范围是？", options: ["0 ~ 4", "1 ~ 5", "0 ~ 5", "1 ~ 4"], a: 0,
+        explain: "n 个元素的数组，下标从 0 开始，最大是 n-1，所以 5 个元素是 0~4。" },
+      { type: "choice", q: "for (int i = 0; i < n; i++) 中，i 表示的是？", options: ["数组元素的值", "数组的下标", "数组的长度", "元素的总和"], a: 1,
+        explain: "i 是下标，a[i] 才是这一格里装的值。" },
+      { type: "choice", q: "求数组所有元素的和，累加变量 sum 应该初始化为？", options: ["1", "0", "a[0]", "随便，不用初始化"], a: 1,
+        explain: "求和要从 0 开始累加，否则结果会带上初始的随机值。" },
+      { type: "choice", q: "找数组最大值时，下面哪种初始化比较稳妥？", options: ["int mx = 0;", "int mx = a[0];", "int mx = a[n];", "int mx;"], a: 1,
+        explain: "mx 先取第一个元素 a[0]，再从 i=1 开始比较最稳妥。" },
+      { type: "choice", q: "统计数组中偶数的个数，判断条件写哪个？", options: ["a[i] % 2 == 1", "a[i] % 2 == 0", "a[i] / 2 == 0", "a[i] == 2"], a: 1,
+        explain: "偶数就是除以 2 余数为 0，所以判断 a[i] % 2 == 0。" },
+      { type: "choice", q: "n 个元素的数组用 for 遍历，循环体会执行几次？", options: ["n-1 次", "n 次", "n+1 次", "不定"], a: 1,
+        explain: "i 从 0 到 n-1，一共 n 次，正好访问每个元素一次。" },
+      { type: "choice", q: "（GESP 风格题）数组 int a[5] = {3, 1, 4, 1, 5}; 用 for 遍历求和，结果是？", options: ["13", "14", "15", "5"], a: 1,
+        explain: "3+1+4+1+5 = 14，遍历累加得到 14。" },
+      { type: "choice", q: "（GESP 风格题）数组 int a[10]; 中合法下标最大是？", options: ["10", "9", "11", "0"], a: 1,
+        explain: "10 个元素下标为 0~9，最大是 9。访问 a[10] 会越界。" },
+      { type: "judge", q: "判断：for 遍历数组时，下标一般从 0 开始，到 n-1 结束。", a: true,
+        explain: "对，n 个元素下标是 0~n-1。" },
+      { type: "judge", q: "判断：a[n] 就是数组的最后一个元素（n 为元素个数）。", a: false,
+        explain: "错，最后一个元素是 a[n-1]，a[n] 已经越界。" },
+      { type: "judge", q: "判断：访问数组越界时，程序可能输出奇怪的值，甚至出错。", a: true,
+        explain: "对，越界访问的结果不可控，要避免。" },
+      { type: "judge", q: "判断：循环变量 i 用来当下标时，一般用整数类型。", a: true,
+        explain: "对，下标是整数，通常用 int。" },
+      { type: "judge", q: "判断：求最大值时，让 mx 从 0 开始一定不会错。", a: false,
+        explain: "错，如果数组里全是负数，mx=0 就不是数组中的最大值了，用 a[0] 更稳妥。" },
+      { type: "judge", q: "判断：输入数组元素也可以写成 for (i=0; i<n; i++) cin >> a[i];", a: true,
+        explain: "对，输入和输出都可以用 for 配合下标完成。" }
+    ];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！for 遍历数组掌握得很棒！" :
+          right >= 6 ? "不错！再复习一下下标和越界，就能更稳。" :
+          right >= 4 ? "还行，把「下标 0~n-1」「求和/找最值套路」再看一遍吧！" :
+          "别灰心，重点看第 1、2 节和可视化器的逐步演示。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("l15step").addEventListener("click", l15Step);
+      document.getElementById("l15auto").addEventListener("click", l15Auto);
+      document.getElementById("l15reset").addEventListener("click", l15Reset);
+      document.getElementById("l15arr").addEventListener("change", l15Reset);
+      document.getElementById("l15start").addEventListener("change", l15Reset);
+      initTabs();
+      initQuiz();
+      l15Reset();
+    });
+  </script>
+</body>
+</html>

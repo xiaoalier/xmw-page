@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>【递归的应用(一)】辗转相除法求最大公约数 · 动态流程图</title>
+<style>
+:root{--ink:#17233b;--muted:#64748b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#eaf1ff,#e9edf6 45%,#f5f1fb);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:var(--ink);padding:26px}
+.wrap{max-width:960px;margin:0 auto}
+.top{text-align:center;margin-bottom:16px}
+.top h1{margin:0 0 6px;font-size:25px}
+.top p{margin:0;color:var(--muted);font-size:14px}
+.card{background:#fff;border:1px solid #e2e8f3;border-radius:18px;padding:20px 24px;margin-bottom:20px;box-shadow:0 10px 30px rgba(30,52,96,.09)}
+.card h2{font-size:18px;margin:0 0 10px;display:flex;align-items:center;gap:9px}
+.dotn{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#3b6fd4,#7c3aed)}
+.stem{background:#f8fafc;border-left:4px solid #60a5fa;border-radius:10px;padding:12px 16px;font-size:14.5px;line-height:1.85;color:#334155}
+.stem b{color:#1d4ed8}
+.kv{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.chip{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:999px;padding:4px 14px;font-size:13px}
+.chip.ok{background:#ecfdf5;border-color:#a7f3d0;color:#047857}
+.io{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.iob{flex:1;min-width:220px;background:#0f172a;border-radius:12px;padding:12px 16px;color:#e2e8f0;font-family:Consolas,monospace;font-size:13px;line-height:1.7}
+.iob .t{color:#94a3b8;font-family:"Microsoft YaHei",sans-serif;font-size:12px;display:block;margin-bottom:4px}
+.stage{display:flex;justify-content:center;padding:6px 0 2px}
+svg{width:100%;height:auto;display:block}
+.fx{opacity:0}
+.cap{text-align:center;margin-top:8px;min-height:26px;font-size:14.5px;font-weight:600;color:#4338ca}
+.cap .hl{background:#eef2ff;border-radius:8px;padding:3px 12px}
+.toolbar{display:flex;justify-content:center;margin:6px 0 4px}
+button{cursor:pointer;border:none;border-radius:999px;padding:9px 22px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#3b6fd4,#7c3aed);box-shadow:0 6px 18px rgba(80,70,200,.30)}
+button:active{transform:translateY(1px)}
+.legend{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+.tl{position:relative;padding:6px 4px;margin-top:4px}
+.tl::before{content:"";position:absolute;left:19px;top:14px;bottom:14px;width:2px;background:#e2e8f3}
+.ev{position:relative;margin:5px 0;padding:7px 12px 7px 44px;border-radius:10px;font-size:14px;line-height:1.4;opacity:0}
+.ev::before{content:"";position:absolute;left:13px;top:50%;transform:translateY(-50%);width:13px;height:13px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #cbd5e1;background:#cbd5e1}
+.ev.in{background:#f4f8ff}.ev.in::before{background:#3b6fd4;box-shadow:0 0 0 1px #3b6fd4}
+.ev.out{background:#f1fdf6}.ev.out::before{background:#16a34a;box-shadow:0 0 0 1px #16a34a}
+.ev .num{position:absolute;left:-2px;top:6px;font-size:10.5px;color:#94a3b8;width:30px;text-align:center}
+.ev .k{font-weight:700;color:#1e293b}
+.ev .tag{font-size:12px;color:#64748b;margin-left:6px}
+.ev.in .k{color:#1d4ed8}.ev.out .k{color:#047857}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>【递归的应用(一)】辗转相除法 · 最大公约数</h1><p>信奥 C++ 星辰班 · 递归专题 · 课堂练习</p></div>
+
+  <section class="card">
+    <h2><span class="dotn"></span>题目</h2>
+    <p class="stem">
+      给出两个整数 a、b，求它们的<b>最大公约数</b>。&nbsp;<b>要求用递归（辗转相除法）完成。</b><br>
+      辗转相除法的思想：<b>gcd(a, b) = gcd(b, a % b)</b>，一直除下去，直到余数为 0，此时的除数就是答案。
+    </p>
+    <div class="kv">
+      <span class="chip">1 ≤ a, b ≤ 1e9</span>
+      <span class="chip">核心：gcd(a,b) = gcd(b, a%b)</span>
+      <span class="chip ok">样例：48 和 18 → 6</span>
+    </div>
+    <div class="io">
+      <div class="iob"><span class="t">输入 #1</span>48 18</div>
+      <div class="iob"><span class="t">输出 #1</span>6</div>
+    </div>
+    <p style="margin:10px 0 0;color:#64748b;font-size:13px">48 % 18 = 12；18 % 12 = 6；12 % 6 = 0 → 余数为 0 时，除数 6 就是最大公约数。</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="dotn"></span>程序流程图 <span style="font-size:12.5px;color:#94a3b8;font-weight:400">（逐步执行 · 以 48, 18 为例）</span></h2>
+    <div class="stage">
+      <svg viewBox="0 0 640 560" id="flow">
+        <defs>
+          <marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 z" fill="#64748b"/></marker>
+          <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafff2"/><stop offset="1" stop-color="#c9f6da"/></linearGradient>
+          <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f7ff"/><stop offset="1" stop-color="#dfeaff"/></linearGradient>
+          <linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0f0"/><stop offset="1" stop-color="#ffd7d7"/></linearGradient>
+          <linearGradient id="gAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#ffedc9"/></linearGradient>
+          <linearGradient id="gPurple" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f3ff"/><stop offset="1" stop-color="#eadcff"/></linearGradient>
+          <linearGradient id="gPink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3fa"/><stop offset="1" stop-color="#ffdcef"/></linearGradient>
+        </defs>
+        <g class="fx" id="nStart"><rect x="180" y="16" width="140" height="46" rx="23" fill="url(#gGreen)" stroke="#16a34a" stroke-width="2"/><text x="250" y="39" font-size="16" text-anchor="middle" dominant-baseline="middle" fill="#14532d">开 始</text></g>
+        <line class="fx" id="a1" x1="250" y1="62" x2="250" y2="92" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/>
+        <g class="fx" id="nRead"><rect x="150" y="92" width="200" height="46" rx="12" fill="url(#gBlue)" stroke="#3b6fd4" stroke-width="2"/><text x="250" y="115" font-size="16" text-anchor="middle" dominant-baseline="middle" fill="#1e3a8a">读入 a、b</text></g>
+        <line class="fx" id="a2" x1="250" y1="138" x2="250" y2="170" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/>
+        <g class="fx" id="nDec"><polygon points="250,172 365,222 250,272 135,222" fill="url(#gAmber)" stroke="#d97706" stroke-width="2"/><text x="250" y="214" font-size="16" text-anchor="middle" dominant-baseline="middle" fill="#7c2d12">b == 0 ?</text><text x="250" y="238" font-size="12" text-anchor="middle" dominant-baseline="middle" fill="#92400e">(边界)</text></g>
+        <line class="fx" id="a3" x1="365" y1="222" x2="441" y2="222" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/>
+        <g class="fx" id="lblYes"><text x="403" y="214" font-size="13" text-anchor="middle" fill="#334155">是</text></g>
+        <g class="fx" id="nYes"><rect x="441" y="198" width="170" height="48" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/><text x="526" y="222" font-size="15" text-anchor="middle" dominant-baseline="middle" fill="#334155">return a</text></g>
+        <line class="fx" id="a4" x1="250" y1="272" x2="250" y2="306" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/>
+        <g class="fx" id="lblNo"><text x="262" y="292" font-size="13" fill="#334155">否</text></g>
+        <g class="fx" id="nRec"><rect x="124" y="306" width="252" height="56" rx="12" fill="url(#gPurple)" stroke="#7c3aed" stroke-width="2"/><text x="250" y="327" font-size="15" text-anchor="middle" dominant-baseline="middle" fill="#5b21b6">return gcd( b , a % b )</text><text x="250" y="347" font-size="12.5" text-anchor="middle" dominant-baseline="middle" fill="#6d28d9">递归：用 b 和余数继续除</text></g>
+        <line class="fx" id="a5" x1="250" y1="362" x2="250" y2="396" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/>
+        <g class="fx" id="nRet"><rect x="124" y="396" width="252" height="56" rx="12" fill="url(#gPink)" stroke="#db2777" stroke-width="2"/><text x="250" y="417" font-size="15" text-anchor="middle" dominant-baseline="middle" fill="#9d174d">回溯：结果逐层原样返回</text><text x="250" y="437" font-size="12.5" text-anchor="middle" dominant-baseline="middle" fill="#be185d">gcd(6,0)=6 → 6 → 6 → 6</text></g>
+        <line class="fx" id="a6" x1="250" y1="452" x2="250" y2="486" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/>
+        <g class="fx" id="nEnd"><rect x="180" y="486" width="140" height="46" rx="23" fill="url(#gRed)" stroke="#dc2626" stroke-width="2"/><text x="250" y="509" font-size="16" text-anchor="middle" dominant-baseline="middle" fill="#7f1d1d">结 束</text></g>
+        <circle class="fx" id="tk" cx="250" cy="62" r="7" fill="#7c3aed"/>
+      </svg>
+    </div>
+    <div class="cap" id="cap1">点击下方「重新播放」查看执行过程</div>
+    <div class="legend">
+      <span><i style="background:#c9f6da;border:1px solid #16a34a"></i>开始 / 结束</span>
+      <span><i style="background:#dfeaff;border:1px solid #3b6fd4"></i>操作</span>
+      <span><i style="background:#ffedc9;border:1px solid #d97706"></i>判断</span>
+      <span><i style="background:#eadcff;border:1px solid #7c3aed"></i>递归调用</span>
+      <span><i style="background:#ffdcef;border:1px solid #db2777"></i>回溯返回</span>
+    </div>
+    <div class="toolbar"><button id="replay1">▶ 重新播放（流程图）</button></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="dotn"></span>递归的执行顺序（时间线 · 48 和 18）</h2>
+    <p style="margin:2px 0 6px;color:#64748b;font-size:13px">蓝色 = 进入函数（往下深入），绿色 = 返回结果（往回走）。辗转相除是"一条线"深入到底，再原样返回。</p>
+    <div class="tl" id="tl">
+      <div class="ev in"  style="margin-left:0px"><span class="num">1</span><span class="k">↓ 进入 gcd(48, 18)</span><span class="tag">b=18≠0 → 转 gcd(18, 48%18=12)</span></div>
+      <div class="ev in"  style="margin-left:22px"><span class="num">2</span><span class="k">↓ 进入 gcd(18, 12)</span><span class="tag">b=12≠0 → 转 gcd(12, 18%12=6)</span></div>
+      <div class="ev in"  style="margin-left:44px"><span class="num">3</span><span class="k">↓ 进入 gcd(12, 6)</span><span class="tag">b=6≠0 → 转 gcd(6, 12%6=0)</span></div>
+      <div class="ev in"  style="margin-left:66px"><span class="num">4</span><span class="k">↓ 进入 gcd(6, 0)</span><span class="tag">b=0 → 边界，返回 a = 6</span></div>
+      <div class="ev out" style="margin-left:44px"><span class="num">5</span><span class="k">↑ 返回 gcd(12, 6) = 6</span></div>
+      <div class="ev out" style="margin-left:22px"><span class="num">6</span><span class="k">↑ 返回 gcd(18, 12) = 6</span></div>
+      <div class="ev out" style="margin-left:0px"><span class="num">7</span><span class="k">↑ 返回 gcd(48, 18) = 6</span><span class="tag">✅ 最大公约数 = 6</span></div>
+    </div>
+    <div class="toolbar"><button id="replay2">▶ 重新播放（时间线）</button></div>
+  </section>
+
+  <div class="foot">题面来自 CRM 课堂练习 · 流程图与执行时间线自动生成 · 2026-10-09</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms);});};
+  function fx(d){return {duration:(d||420),fill:"both",easing:"cubic-bezier(.2,.8,.3,1)"};}
+  function pop(id,dur){var el=document.getElementById(id);if(el)el.animate([{opacity:0,transform:"translateY(14px)"},{opacity:1,transform:"translateY(0px)"}],fx(dur));}
+  function fade(id,dur){var el=document.getElementById(id);if(el)el.animate([{opacity:0},{opacity:1}],fx(dur||350));}
+  function draw(id,dur){var el=document.getElementById(id);if(el)el.animate([{opacity:0,strokeDashoffset:1400},{opacity:1,strokeDashoffset:0}],fx(dur||380));}
+  function tokenTo(from,to,dur){var el=document.getElementById("tk");el.animate([{opacity:1,transform:"translateY("+from+"px)"},{opacity:1,transform:"translateY("+to+"px)"}],{duration:(dur||480),fill:"both",easing:"ease-in-out"});}
+  function cap(id,text){var el=document.getElementById(id);if(el)el.innerHTML=text?'<span class="hl">'+text+'</span>':"";}
+  function reset(svgId){document.querySelectorAll("#"+svgId+" *").forEach(function(e){if(e.getAnimations)e.getAnimations().forEach(function(a){try{a.cancel();}catch(_){}});e.style.strokeDashoffset="";});}
+
+  var r1=false;
+  async function runFlow(){
+    if(r1)return; r1=true;
+    reset("flow"); await sleep(30);
+    cap("cap1","准备开始…");
+    pop("nStart"); await sleep(340);
+    draw("a1"); fade("tk",200); await sleep(340);
+    pop("nRead"); cap("cap1","读入 a = 48，b = 18"); await sleep(500);
+    draw("a2"); tokenTo(0,53); await sleep(500);
+    pop("nDec"); cap("cap1","判断：b = 18 == 0 ？"); await sleep(620);
+    draw("a4"); fade("lblNo"); cap("cap1","18 ≠ 0 → 走【否】分支"); await sleep(560);
+    fade("lblYes"); fade("nYes"); draw("a3"); await sleep(460);
+    tokenTo(53,160); await sleep(500);
+    pop("nRec"); cap("cap1","gcd(48,18) → gcd(18, 48%18=12)　继续除"); await sleep(800);
+    draw("a5"); tokenTo(160,272); await sleep(520);
+    pop("nRet"); cap("cap1","回溯：除到 gcd(6,0) 得 6，再逐层原样返回"); await sleep(740);
+    draw("a6"); tokenTo(272,447); await sleep(520);
+    pop("nEnd"); cap("cap1","输出 6 ✅ 完成"); await sleep(400);
+    r1=false;
+  }
+
+  var r2=false;
+  async function runTimeline(){
+    if(r2)return; r2=true;
+    var evs=document.querySelectorAll("#tl .ev");
+    evs.forEach(function(e){if(e.getAnimations)e.getAnimations().forEach(function(a){try{a.cancel();}catch(_){}});});
+    await sleep(30);
+    for(var i=0;i<evs.length;i++){
+      evs[i].animate([{opacity:0,transform:"translateX(-10px)"},{opacity:1,transform:"translateX(0)"}],fx(420));
+      await sleep(380);
+    }
+    r2=false;
+  }
+
+  document.getElementById("replay1").addEventListener("click",runFlow);
+  document.getElementById("replay2").addEventListener("click",runTimeline);
+  window.addEventListener("load",function(){setTimeout(runFlow,200);setTimeout(runTimeline,600);});
+})();
+</script>
+</body>
+</html>

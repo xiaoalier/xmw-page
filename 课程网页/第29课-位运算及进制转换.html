@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第29课 位运算及进制转换 - 信奥C++星辰班</title>
+  <style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 15px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .console .hi { color: var(--accent-3); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>第29课 · 位运算及进制转换</h1>
+      <p class="subtitle">二进制与十进制互转 · 左移右移 · 取某一位</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 一、二进制与十进制互转 -->
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>二进制 ↔ 十进制</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">二进制 → 十进制</div>
+          <p>把每一位乘以它所在位置的权（2 的次方），再全部相加。位数从右往左、从 0 开始数。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">十进制 → 二进制</div>
+          <p>用 2 反复去除，记下每次的余数，直到商为 0，再把余数<b>倒序</b>读出来。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">编程递推写法</div>
+          <p>从左到右扫描二进制位，<code>ans = ans * 2 + 当前位</code>，一遍就能转成十进制。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔁</span>两种方向各看一个例子</div>
+        <div class="anno">
+<pre><span class="cm">// 二进制 1011 转十进制（按权展开）</span>
+1011 = 1×2³ + 0×2² + 1×2¹ + 1×2⁰
+     = 8 + 0 + 2 + 1
+     = <span class="s">11</span>
+
+<span class="cm">// 十进制 13 转二进制（除 2 取余，倒序）</span>
+13 ÷ 2 = 6 余 <span class="s">1</span>   ↑
+ 6 ÷ 2 = 3 余 <span class="s">0</span>   ↑  从下往上读
+ 3 ÷ 2 = 1 余 <span class="s">1</span>   ↑
+ 1 ÷ 2 = 0 余 <span class="s">1</span>   ↑
+结果：13 = <span class="s">1101</span>
+
+<span class="cm">// 编程递推：1011 -> 11</span>
+ans = 0
+ans = 0*2 + 1 = 1
+ans = 1*2 + 0 = 2
+ans = 2*2 + 1 = 5
+ans = 5*2 + 1 = <span class="s">11</span></pre>
+        </div>
+        <p class="mem-note">⚠ <b>易错</b>：权从 0 开始数，不是从 1；除 2 取余的余数要<b>倒序</b>排，别按先后顺序抄。</p>
+      </div>
+    </section>
+
+    <!-- 二、位运算的妙用 -->
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>位运算的"妙用"</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">左移当乘 2</div>
+          <p><code>n &lt;&lt; k</code> 相当于 <code>n × 2^k</code>。左移 1 位就是翻一倍。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">右移当整除 2</div>
+          <p>非负整数 <code>n &gt;&gt; k</code> 相当于 <code>n 整除 2^k</code>，向下取整。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">取某一位</div>
+          <p><code>(n &gt;&gt; k) &amp; 1</code> 就能取出 n 的第 k 位，结果是 0 或 1。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧠</span>例子里体会一下（n = 13，二进制 1101）</div>
+        <div class="anno">
+<pre>13 &lt;&lt; 1 = <span class="s">26</span>      <span class="cm">// 13 × 2</span>
+13 &gt;&gt; 1 = <span class="s">6</span>       <span class="cm">// 13 整除 2</span>
+13 &lt;&lt; 2 = <span class="s">52</span>      <span class="cm">// 13 × 4</span>
+13 &gt;&gt; 2 = <span class="s">3</span>       <span class="cm">// 13 整除 4</span>
+
+<span class="cm">// 13 的二进制 1101，取各位：</span>
+第 0 位 (13 &gt;&gt; 0) &amp; 1 = <span class="s">1</span>
+第 1 位 (13 &gt;&gt; 1) &amp; 1 = <span class="s">0</span>
+第 2 位 (13 &gt;&gt; 2) &amp; 1 = <span class="s">1</span>
+第 3 位 (13 &gt;&gt; 3) &amp; 1 = <span class="s">1</span>
+
+<span class="cm">// 判断奇偶：13 &amp; 1 = 1，是奇数</span></pre>
+        </div>
+        <p class="mem-note">💡 用位运算能省时间，也常用于"状态压缩""开关标记"这类题目。</p>
+      </div>
+    </section>
+
+    <!-- 三、可视化器 -->
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>可视化器：进制互转 + 位运算实验室</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧪</span>选一个方向，输入数字，看每一步怎么算</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field">
+              <label>演示方向</label>
+              <select id="l29mode">
+                <option value="dec">十进制 → 二进制 + 位运算</option>
+                <option value="bin">二进制 → 十进制</option>
+              </select>
+            </div>
+            <div class="field">
+              <label id="l29lbNum">十进制数 n（0 或正整数）</label>
+              <input id="l29num" value="13">
+            </div>
+            <div class="field" id="l29kField">
+              <label>要查看/移位的位号 k（0 ~ 30）</label>
+              <input id="l29k" value="2">
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="l29run">▶ 计算</button>
+            </div>
+            <div class="conv-msg" id="l29msg">选好方向，点「计算」看结果…</div>
+            <div class="sim-arr-label" style="margin-top: 6px;">对应代码</div>
+            <div class="lp-code"><pre id="l29code">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">分步结果</div>
+            <div class="console" id="l29out"><span class="muted">--</span></div>
+            <div class="step-final" id="l29res" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 四、代码 -->
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="to2">十进制转二进制</div>
+          <div class="code-tab" data-tab="to10">二进制转十进制</div>
+          <div class="code-tab" data-tab="op">左移右移与取位</div>
+          <div class="code-tab" data-tab="trap">易错对比</div>
+        </div>
+
+        <div class="code-content active" id="tab-to2">
+          <div class="code-block">
+<pre><span class="comment">// 除 2 取余，余数倒序输出</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n;
+    cin &gt;&gt; n;
+    <span class="keyword">if</span> (n == <span class="number">0</span>) { cout &lt;&lt; <span class="number">0</span>; <span class="keyword">return</span> <span class="number">0</span>; }
+    <span class="type">int</span> ans[<span class="number">40</span>], cnt = <span class="number">0</span>;
+    <span class="keyword">while</span> (n &gt; <span class="number">0</span>) {
+        ans[cnt++] = n % <span class="number">2</span>;   <span class="comment">// 取余</span>
+        n = n / <span class="number">2</span>;              <span class="comment">// 除以 2</span>
+    }
+    <span class="keyword">for</span> (<span class="type">int</span> i = cnt - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)
+        cout &lt;&lt; ans[i];          <span class="comment">// 倒序输出</span>
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-to10">
+          <div class="code-block">
+<pre><span class="comment">// 方法一：按权展开（从右往左）</span>
+<span class="type">int</span> ans = <span class="number">0</span>, w = <span class="number">1</span>;
+<span class="keyword">while</span> (n &gt; <span class="number">0</span>) {
+    ans += (n % <span class="number">10</span>) * w;
+    w = w * <span class="number">2</span>;
+    n = n / <span class="number">10</span>;
+}
+
+<span class="comment">// 方法二：把二进制当字符串，从左往右递推</span>
+<span class="keyword">string</span> s;
+cin &gt;&gt; s;
+<span class="type">int</span> val = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; s.size(); i++)
+    val = val * <span class="number">2</span> + (s[i] - <span class="string">'0'</span>);
+cout &lt;&lt; val &lt;&lt; endl;</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-op">
+          <div class="code-block">
+<pre><span class="type">int</span> n = <span class="number">13</span>;               <span class="comment">// 1101</span>
+cout &lt;&lt; (n &lt;&lt; <span class="number">1</span>) &lt;&lt; endl;  <span class="comment">// 26 = 13 × 2</span>
+cout &lt;&lt; (n &gt;&gt; <span class="number">1</span>) &lt;&lt; endl;  <span class="comment">// 6  = 13 整除 2</span>
+cout &lt;&lt; (n &lt;&lt; <span class="number">2</span>) &lt;&lt; endl;  <span class="comment">// 52 = 13 × 4</span>
+
+<span class="comment">// 取出第 k 位（k 从 0 开始）</span>
+<span class="type">int</span> k = <span class="number">2</span>;
+<span class="type">int</span> bit = (n &gt;&gt; k) &amp; <span class="number">1</span>;   <span class="comment">// 1</span>
+
+<span class="comment">// 判断奇偶</span>
+<span class="keyword">if</span> (n &amp; <span class="number">1</span>) cout &lt;&lt; <span class="string">"奇数"</span>;
+<span class="keyword">else</span> cout &lt;&lt; <span class="string">"偶数"</span>;</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-trap">
+          <div class="code-block">
+<pre><span class="comment">// ❌ 除 2 取余后忘了倒序，结果正好反了</span>
+<span class="comment">// ❌ 按权展开时第一位当成 2^1（应从 2^0 开始）</span>
+<span class="comment">// ❌ 把 n >> 1 当成四舍五入，其实是向下取整</span>
+<span class="comment">// ❌ 取第 k 位时忘了 & 1，取出来不是 0/1</span>
+<span class="comment">// ✅ 转完可以用另一种方法再算回去检验</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 五、小测验 -->
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 六、小贴士 -->
+    <div class="tips-section">
+      <h3>💡 小贴士</h3>
+      <ul>
+        <li><strong>二 → 十</strong>：按权展开，每位乘 2 的次方再相加，权从 0 开始。</li>
+        <li><strong>十 → 二</strong>：除 2 取余，商到 0 为止，余数倒序读。</li>
+        <li><strong>递推好写法</strong>：<code>ans = ans * 2 + 当前位</code>，从左往右一遍搞定。</li>
+        <li><strong>左移乘、右移除</strong>：<code>n &lt;&lt; k</code> 是乘 <code>2^k</code>，<code>n &gt;&gt; k</code> 是整除 <code>2^k</code>。</li>
+        <li><strong>取某一位</strong>：<code>(n &gt;&gt; k) &amp; 1</code> 得到第 k 位是 0 还是 1。</li>
+        <li><strong>判断奇偶</strong>：<code>n &amp; 1</code> 为 1 是奇数，为 0 是偶数。</li>
+        <li><strong>0 要单独处理</strong>：十进制 0 转二进制就是 0。</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="container">
+      <p>信奥 C++ 星辰班 · 第29课 位运算及进制转换</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof history !== "undefined" && "scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    /* ================= 可视化器 ================= */
+    function L29_toBin(n) {
+      if (n === 0) return "0";
+      var s = "";
+      while (n > 0) { s = (n % 2) + s; n = Math.floor(n / 2); }
+      return s;
+    }
+
+    function L29_run() {
+      var mode = document.getElementById("l29mode").value;
+      var out = document.getElementById("l29out");
+      var codeEl = document.getElementById("l29code");
+      var msg = document.getElementById("l29msg");
+      var res = document.getElementById("l29res");
+      var raw = document.getElementById("l29num").value.trim();
+
+      if (mode === "dec") {
+        var n = parseInt(raw, 10);
+        var k = parseInt(document.getElementById("l29k").value, 10);
+        if (isNaN(n) || n < 0 || n > 1000000000) {
+          out.textContent = "请输入 0 ~ 1000000000 的整数。";
+          return;
+        }
+        if (isNaN(k) || k < 0 || k > 30) { out.textContent = "位号 k 要在 0 ~ 30 之间。"; return; }
+        var bin = L29_toBin(n);
+        var shl1 = n * 2, shr1 = Math.floor(n / 2);
+        var shlk = n * Math.pow(2, k), shrk = Math.floor(n / Math.pow(2, k));
+        var bitk = Math.floor(n / Math.pow(2, k)) % 2;
+        var lines = [];
+        lines.push("十进制 " + n + " 的二进制 = " + bin);
+        lines.push("（位数 " + bin.length + "，权从右往左 2^0 起）");
+        lines.push("-----------------------------------");
+        lines.push("n << 1 = " + shl1 + "     （n × 2）");
+        lines.push("n >> 1 = " + shr1 + "     （n 整除 2）");
+        lines.push("n << " + k + " = " + shlk + "     （n × 2^" + k + "）");
+        lines.push("n >> " + k + " = " + shrk + "     （n 整除 2^" + k + "）");
+        lines.push("(n >> " + k + ") & 1 = " + bitk + "     （第 " + k + " 位）");
+        lines.push("n & 1 = " + (n % 2) + "     （1 是奇数，0 是偶数）");
+        out.textContent = lines.join("\n");
+        res.style.display = "block";
+        res.innerHTML = "" + n + " 的二进制是 <b>" + bin + "</b>，第 " + k + " 位是 <b>" + bitk + "</b>";
+        codeEl.textContent =
+          "int n = " + n + ", k = " + k + ";\n" +
+          "cout << (n << 1) << endl;        // " + shl1 + "\n" +
+          "cout << (n >> 1) << endl;        // " + shr1 + "\n" +
+          "cout << (n << k) << endl;        // " + shlk + "\n" +
+          "cout << (n >> k) << endl;        // " + shrk + "\n" +
+          "cout << ((n >> k) & 1) << endl;  // 第 k 位 = " + bitk;
+        msg.textContent = "左移 1 位乘 2，右移 1 位整除 2，(n >> k) & 1 取第 k 位。";
+      } else {
+        var s = raw.replace(/\s/g, "");
+        if (s === "") { out.textContent = "请输入一串二进制数（只含 0 和 1）。"; return; }
+        if (!/^[01]+$/.test(s)) { out.textContent = "二进制只能包含 0 和 1。"; return; }
+        if (s.length > 31) { out.textContent = "太长啦，演示最多 31 位。"; return; }
+        var val = 0, terms = [];
+        for (var i = 0; i < s.length; i++) {
+          var d = s.charCodeAt(i) - 48;
+          var pos = s.length - 1 - i;
+          val = val * 2 + d;
+          terms.push(d + "×2^" + pos);
+        }
+        var lines2 = [];
+        lines2.push("二进制 " + s + " 按权展开：");
+        lines2.push(terms.join(" + "));
+        lines2.push("= " + val);
+        lines2.push("");
+        lines2.push("递推过程：ans = ans * 2 + 当前位");
+        var run2 = 0, steps = [];
+        for (var j = 0; j < s.length; j++) {
+          run2 = run2 * 2 + (s.charCodeAt(j) - 48);
+          steps.push(run2);
+        }
+        lines2.push(steps.join(" -> "));
+        out.textContent = lines2.join("\n");
+        res.style.display = "block";
+        res.innerHTML = "(" + s + ")<sub>2</sub> = <b>" + val + "</b>（十进制）";
+        codeEl.textContent =
+          "string s = \"" + s + "\";\n" +
+          "int val = 0;\n" +
+          "for (int i = 0; i < s.size(); i++)\n" +
+          "    val = val * 2 + (s[i] - '0');\n" +
+          "cout << val << endl;   // " + val;
+        msg.textContent = "按权展开求和，也可以用 ans = ans*2 + 当前位 从左往右递推。";
+      }
+    }
+
+    function L29_toggle() {
+      var mode = document.getElementById("l29mode").value;
+      document.getElementById("l29lbNum").textContent =
+        mode === "dec" ? "十进制数 n（0 或正整数）" : "二进制数（只含 0 和 1）";
+      document.getElementById("l29kField").style.display = mode === "dec" ? "block" : "none";
+      document.getElementById("l29num").value = mode === "dec" ? "13" : "1101";
+      L29_run();
+    }
+
+    /* ================= 代码标签 ================= */
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    /* ================= 小测验 ================= */
+    var QUIZ_BANK = [
+      { type: "choice", q: "二进制 1101 转成十进制是？", options: ["11", "12", "13", "14"], a: 2,
+        explain: "1×2³ + 1×2² + 0×2¹ + 1×2⁰ = 8 + 4 + 0 + 1 = 13。" },
+      { type: "choice", q: "十进制 13 转成二进制是？", options: ["1011", "1101", "1110", "1010"], a: 1,
+        explain: "除 2 取余，余数倒序：13 = 1101。" },
+      { type: "choice", q: "二进制数从右往左第 0 位的权是？", options: ["1", "2", "4", "0"], a: 0,
+        explain: "第 0 位的权是 2⁰ = 1。" },
+      { type: "choice", q: "（非负整数）n >> 1 相当于？", options: ["整除 2", "乘以 2", "取反", "加 1"], a: 0,
+        explain: "右移 1 位相当于整除 2。" },
+      { type: "choice", q: "(n >> k) &amp; 1 取出来的是什么？", options: ["n 的第 k 位", "n 的一半", "n 的符号", "n 的位数"], a: 0,
+        explain: "先右移 k 位把第 k 位挪到最低位，再 &amp; 1 取出它。" },
+      { type: "choice", q: "6 &lt;&lt; 2 等于多少？", options: ["8", "12", "24", "36"], a: 2,
+        explain: "左移 2 位相当于乘 4，6 × 4 = 24。" },
+      { type: "choice", q: "（GESP 风格题）二进制 10010 转成十进制是？", options: ["16", "17", "18", "20"], a: 2,
+        explain: "1×16 + 0×8 + 0×4 + 1×2 + 0×1 = 16 + 2 = 18。" },
+      { type: "choice", q: "（GESP 风格题）把二进制数左移一位，结果相当于？", options: ["乘以 2", "整除 2", "加 1", "取反"], a: 0,
+        explain: "左移一位相当于乘 2，右移一位相当于整除 2。" },
+      { type: "choice", q: "（GESP 风格题）7 的二进制是 111，7 &gt;&gt; 1 的结果是？", options: ["2", "3", "4", "6"], a: 1,
+        explain: "7 整除 2 向下取整 = 3。" },
+      { type: "choice", q: "（GESP 风格题）判断一个非负整数 n 是不是偶数，可以用？", options: ["(n &amp; 1) == 0", "(n | 1) == 0", "(n ^ 1) == 0", "(n >> 1) == 0"], a: 0,
+        explain: "最低位是 0 说明是偶数，(n &amp; 1) == 0 就是偶数。" },
+      { type: "judge", q: "判断：n &lt;&lt; 1 的值等于 n × 2。", a: true,
+        explain: "对，左移一位相当于乘 2。" },
+      { type: "judge", q: "判断：十进制转二进制时，余数按出现的先后顺序排列就是结果。", a: false,
+        explain: "错，余数要从下往上倒序排列。" },
+      { type: "judge", q: "判断：可以用 (n >> k) &amp; 1 来判断 n 的第 k 位是 0 还是 1。", a: true,
+        explain: "对，这是取某一位的标准写法。" },
+      { type: "judge", q: "判断：二进制数里只会出现 0 和 1 两种数码。", a: true,
+        explain: "对，二进制只有 0 和 1。" },
+      { type: "judge", q: "判断：二进制 1011 转十进制，1×8 + 0×4 + 1×2 + 1×1 = 11。", a: true,
+        explain: "对，按权展开求和就是 11。" }
+    ];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！二进制互转和位运算都用得很顺！" :
+          right >= 6 ? "不错！再把「除 2 取余要倒序」复习一下就更好。" :
+          right >= 4 ? "还行，重点看第 1 节的互转和第 3 节的可视化器。" :
+          "别灰心，先记住两句：二→十按权展开，十→二除 2 取余倒序。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("l29run").addEventListener("click", L29_run);
+      document.getElementById("l29mode").addEventListener("change", L29_toggle);
+      initTabs();
+      initQuiz();
+      L29_toggle();
+    });
+  </script>
+</body>
+</html>

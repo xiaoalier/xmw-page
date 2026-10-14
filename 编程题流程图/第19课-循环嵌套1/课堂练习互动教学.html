@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第19课-循环嵌套1 · 课堂练习互动教学</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#eaf1ff,#e9edf6 45%,#f5f1fb);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:#17233b;padding:22px}
+.wrap{max-width:900px;margin:0 auto}h1{font-size:22px;text-align:center;margin:0 0 4px}.sub{text-align:center;color:#64748b;font-size:13.5px;margin:0 0 14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}.tab{cursor:pointer;border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px}.tab.on{background:linear-gradient(135deg,#3b6fd4,#7c3aed);color:#fff;border-color:transparent}
+.card{background:#fff;border:1px solid #e2e8f3;border-radius:16px;padding:18px 20px;box-shadow:0 10px 30px rgba(30,52,96,.09)}
+.stem{background:#f8fafc;border-left:4px solid #60a5fa;border-radius:8px;padding:10px 14px;font-size:15px;line-height:1.7}.stem .t{color:#94a3b8;font-size:12px;display:block;margin-bottom:2px}
+h3.phase{font-size:15.5px;margin:16px 0 8px;display:flex;align-items:center;gap:8px}h3.phase .p{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;border-radius:999px;font-size:11.5px;padding:2px 9px}h3.phase .p.b{background:#eef2ff;color:#4338ca;border-color:#c7d2fe}
+.qa .item{border:1px solid #e2e8f3;border-radius:12px;margin-bottom:10px;overflow:hidden}.qa .q{display:flex;gap:10px;padding:12px 14px;background:#f8fafc;font-size:14.5px;line-height:1.6;cursor:pointer}.qa .q .n{flex:0 0 24px;height:24px;border-radius:50%;background:#e0e7ff;color:#4338ca;font-size:13px;font-weight:700;display:grid;place-items:center}.qa .q .who{color:#94a3b8;font-size:12px;margin-left:auto;white-space:nowrap}.qa .a{max-height:0;overflow:hidden;transition:max-height .28s,padding .28s}.qa .item.open .a{max-height:900px;padding:12px 14px}.qa .a .inner{color:#334155;font-size:14px;line-height:1.75}.qa .a .inner b{color:#1d4ed8}
+.code{background:#0f172a;color:#e2e8f0;border-radius:10px;padding:12px 16px;font-family:Consolas,monospace;font-size:13.5px;line-height:1.75;overflow:auto;white-space:pre;margin-top:8px}
+.io{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}.io label{font-size:14px}.io input{width:150px;padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:Consolas,monospace}
+.out{min-height:52px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;margin-top:8px;font-family:Consolas,monospace;font-size:15px;white-space:pre-wrap;color:#0f172a}.out .lbl{color:#94a3b8;font-family:"Microsoft YaHei"}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+button{cursor:pointer;border:none;border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#3b6fd4,#7c3aed)}button.ghost{background:#eef2ff;color:#3730a3}
+.note{color:#94a3b8;font-size:12.5px}.reveal{margin-top:10px;background:#fff7ed;border:1px dashed #fdba74;border-radius:12px;padding:14px;text-align:center}#demo{display:none}
+</style></head><body>
+<div class="wrap"><h1>第19课-循环嵌套1 · 课堂练习互动教学</h1><p class="sub">写题前：先问学生 → 写题后：再看代码和运行</p>
+<div class="tabs" id="tabs"></div>
+<div class="card">
+  <div class="stem" id="stem"></div>
+  <h3 class="phase"><span class="p">① 写题前 · 问学生</span> 点卡片揭晓答案</h3>
+  <div class="qa" id="qa"></div>
+  <div class="ctrl"><button id="allQ">👁 揭晓全部</button><button id="noneQ" class="ghost">收起全部</button><span class="note">先让学生说出来～</span></div>
+  <h3 class="phase"><span class="p b">② 写题后 · 给学生看</span> 代码 + 运行</h3>
+  <div class="reveal" id="revealBox"><button id="revealBtn">👁 学生写完了，看答案 + 运行</button><div class="note" style="margin-top:6px">（写之前先藏着，别剧透）</div></div>
+  <div id="demo">
+    <div class="code" id="code"></div>
+    <div class="io" id="io"></div>
+    <div class="ctrl"><button id="run">▶ 运行</button></div>
+    <div class="out" id="out"></div>
+  </div>
+</div></div>
+<script>
+var DATA = [{t:"正方形",stem:"输出 n×n 的正方形。",qa:[["两层循环：", "外层控制<b>行</b>，内层控制<b>每行输出几个</b>。"], ["每行结束？", "内层输出完要 <b>换行</b>。"], ["输出什么字符以题目样例为准。"]],code:"for (int i=0;i<n;i++){\n    for (int j=0;j<n;j++) cout << \"*\";\n    cout << endl;\n}",io:[],run:null},{t:"数一数",stem:"输出 n 次 1~m。",qa:[["几层循环？", "外层 n 次，内层 1~m。"], ["每轮 1~m 后？", "换行。"], ["空格隔开？", "数字间用空格。"]],code:"for (int i=0;i<n;i++){\n    for (int j=1;j<=m;j++) cout << j << \" \";\n    cout << endl;\n}",io:[{"k": "n", "def": "2"}, {"k": "m", "def": "5"}],run:function(v){var n=Number(v.n),m=Number(v.m),r=[];for(var i=0;i<n;i++){var row=[];for(var j=1;j<=m;j++)row.push(j);r.push(row.join(' '));}return r.join('\n');}},{t:"每个数的约数",stem:"求出每个数字的约数，输出在一行上。",qa:[["约数是什么？", "能整除它的数（1 和它本身也算）。"], ["怎么找？", "对每个数 d 从 1 试到它本身，<b>n % d == 0</b> 就是约数。"], ["读入格式以题目样例为准。"]],code:"for (int d=1; d<=x; d++)\n    if (x % d == 0) cout << d << \" \";",io:[],run:null}];
+(function(){
+"use strict";
+var tabs=document.getElementById("tabs"),stemEl=document.getElementById("stem"),qaEl=document.getElementById("qa"),
+    codeEl=document.getElementById("code"),ioEl=document.getElementById("io"),outEl=document.getElementById("out"),
+    demo=document.getElementById("demo"),revealBox=document.getElementById("revealBox");
+var cur=0,vals={};
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function renderTabs(){tabs.innerHTML="";DATA.forEach(function(p,i){var b=document.createElement("button");b.className="tab"+(i===cur?" on":"");b.textContent=p.t;b.onclick=function(){cur=i;setup();};tabs.appendChild(b);});}
+function buildQA(){var p=DATA[cur];qaEl.innerHTML="";(p.qa||[]).forEach(function(it,idx){var d=document.createElement("div");d.className="item";
+  d.innerHTML='<div class="q"><span class="n">'+(idx+1)+'</span><span>'+it[0]+'</span><span class="who">问学生</span></div><div class="a"><div class="inner">'+it[1]+'</div></div>';
+  d.querySelector(".q").onclick=function(){d.classList.toggle("open");};qaEl.appendChild(d);});}
+function renderIO(){var p=DATA[cur];ioEl.innerHTML="";vals={};(p.io||[]).forEach(function(f){var w=document.createElement("label");w.textContent=f.k+" = ";var inp=document.createElement("input");inp.value=f.def;inp.oninput=function(){vals[f.k]=inp.value;};vals[f.k]=f.def;w.appendChild(inp);ioEl.appendChild(w);});
+  if(!p.io||!p.io.length){ioEl.innerHTML='<span class="note">（这题不需要输入，直接输出）</span>';}}
+function renderCode(){codeEl.textContent=DATA[cur].code;}
+function runIt(){var p=DATA[cur];if(!p.run){outEl.innerHTML='<span class="lbl">这题输出格式以题目样例为准，先看代码和思路～</span>';return;}var r;try{r=p.run(vals);}catch(e){r="（运行出错："+e.message+"）";}outEl.innerHTML='<span class="lbl">输出：</span>\n'+esc(r);}
+document.getElementById("allQ").onclick=function(){document.querySelectorAll("#qa .item").forEach(function(e){e.classList.add("open");});};
+document.getElementById("noneQ").onclick=function(){document.querySelectorAll("#qa .item").forEach(function(e){e.classList.remove("open");});};
+document.getElementById("revealBtn").onclick=function(){revealBox.style.display="none";demo.style.display="block";renderCode();renderIO();runIt();};
+document.getElementById("run").onclick=runIt;
+function setup(){renderTabs();stemEl.innerHTML='<span class="t">题目</span>'+esc(DATA[cur].stem);buildQA();revealBox.style.display="block";demo.style.display="none";}
+setup();
+})();
+</script></body></html>

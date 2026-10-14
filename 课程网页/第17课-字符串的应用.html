@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第17课 字符串的应用 - 信奥C++星辰班</title>
+  <style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 15px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .console .hi { color: var(--accent-3); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>第17课 · 字符串的应用</h1>
+      <p class="subtitle">字符串遍历、统计、查找与比较</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 一、遍历 -->
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>遍历字符串：一个字符一个字符看</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">用下标遍历</div>
+          <p>字符串长度记作 <code>len</code>，用 <code>for (int i = 0; i &lt; len; i++)</code> 依次访问 <code>s[i]</code>。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">遍历是基础</div>
+          <p>统计、查找、替换，都是"从头到尾看一遍"，看到符合条件的位置就做处理。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">下标从 0 开始</div>
+          <p>第 1 个字符是 <code>s[0]</code>，最后一个字符是 <code>s[len-1]</code>。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🚶</span>遍历框架</div>
+        <div class="anno">
+<pre><span class="k">int</span> len = s.length();
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">0</span>; i &lt; len; i++) {
+    cout &lt;&lt; s[i] &lt;&lt; endl;   <span class="cm">// 依次输出每个字符</span>
+}</pre>
+        </div>
+        <p class="mem-note">💡 字符数组可以用 <code>strlen(s)</code> 求长度，<code>for</code> 里也可以用 <code>s[i] != '\0'</code> 作为结束条件。</p>
+      </div>
+    </section>
+
+    <!-- 二、统计与查找 -->
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>统计与查找</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">统计字符个数</div>
+          <p>看到目标字符就 <code>cnt++</code>。统计数字字符用 <code>s[i] &gt;= '0' &amp;&amp; s[i] &lt;= '9'</code>。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">查找字符位置</div>
+          <p>遍历时若 <code>s[i] == ch</code>，记下下标 <code>i</code> 并可以 <code>break</code> 提前结束。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">没找到怎么办</div>
+          <p>可以先把结果设为 <code>-1</code>，遍历完还是 -1，就说明字符串里没有这个字符。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔎</span>统计和查找的写法</div>
+        <div class="anno">
+<pre><span class="cm">// 统计字符 ch 出现的次数</span>
+<span class="k">int</span> cnt = <span class="s">0</span>;
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">0</span>; i &lt; len; i++)
+    <span class="k">if</span> (s[i] == ch) cnt++;
+
+<span class="cm">// 查找 ch 第一次出现的位置，没找到是 -1</span>
+<span class="k">int</span> pos = -<span class="s">1</span>;
+<span class="k">for</span> (<span class="k">int</span> i = <span class="s">0</span>; i &lt; len; i++) {
+    <span class="k">if</span> (s[i] == ch) { pos = i; <span class="k">break</span>; }
+}</pre>
+        </div>
+        <p class="mem-note">⚠ <b>易错</b>：位置是下标，从 <code>0</code> 开始；不要把"第几个"和"下标"弄混。</p>
+      </div>
+    </section>
+
+    <!-- 三、比较 -->
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>字符串的比较</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">string 直接用 ==</div>
+          <p>两个 <code>string</code> 判断相等，可以直接写 <code>a == b</code>，比较方便。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">字符数组用 strcmp</div>
+          <p>字符数组是数组，不能用 <code>==</code> 比较内容，要用 <code>strcmp(a, b)</code>：返回 0 表示相等。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">按 ASCII 逐位比</div>
+          <p>比较时从第 1 个字符开始，按 ASCII 码逐个比，谁先小就谁小。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">⚖</span>两种比较方式</div>
+        <div class="anno">
+<pre><span class="cm">// string 比较</span>
+<span class="k">string</span> a = <span class="s">"abc"</span>, b = <span class="s">"abc"</span>;
+<span class="k">if</span> (a == b) cout &lt;&lt; <span class="s">"相等"</span>;
+
+<span class="cm">// 字符数组比较</span>
+<span class="k">char</span> c[<span class="s">10</span>] = <span class="s">"abc"</span>, d[<span class="s">10</span>] = <span class="s">"abd"</span>;
+<span class="k">int</span> r = strcmp(c, d);   <span class="cm">// r &lt; 0，因为 'c' &lt; 'd'</span>
+<span class="cm">// r == 0 相等，r &lt; 0 前小，r &gt; 0 前大</span></pre>
+        </div>
+        <p class="mem-note">💡 判断相等用 <code>==</code>（两个等号），一个等号 <code>=</code> 是赋值，别写错。</p>
+      </div>
+    </section>
+
+    <!-- 四、可视化器 -->
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>可视化器：字符串分析器</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧪</span>输入字符串，做遍历统计、查找字符、比较两个字符串</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field">
+              <label>字符串 s（可以含空格）</label>
+              <input id="l17s" value="Hello World">
+            </div>
+            <div class="field">
+              <label>要查找的字符（写 1 个字符）</label>
+              <input id="l17ch" value="l">
+            </div>
+            <div class="field">
+              <label>用来比较的字符串 t</label>
+              <input id="l17t" value="Hello World">
+            </div>
+            <div class="field">
+              <label>选择操作</label>
+              <select id="l17op">
+                <option value="count">遍历统计（总字符数 + 各字符次数）</option>
+                <option value="find">查找字符第一次出现的位置</option>
+                <option value="cmp">比较字符串 s 和 t</option>
+              </select>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="l17run">▶ 分析</button>
+            </div>
+            <div class="conv-msg" id="l17msg">选好操作，点「分析」看结果…</div>
+            <div class="sim-arr-label" style="margin-top: 6px;">对应代码</div>
+            <div class="lp-code"><pre id="l17code">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">运行结果</div>
+            <div class="console" id="l17out"><span class="muted">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 五、代码 -->
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="each">遍历输出</div>
+          <div class="code-tab" data-tab="count">统计字符个数</div>
+          <div class="code-tab" data-tab="find">查找字符位置</div>
+          <div class="code-tab" data-tab="cmp">字符串比较</div>
+          <div class="code-tab" data-tab="trap">易错对比</div>
+        </div>
+
+        <div class="code-content active" id="tab-each">
+          <div class="code-block">
+<pre><span class="comment">// 遍历字符串，逐个输出</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;string&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">string</span> s;
+    cin &gt;&gt; s;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++) {
+        cout &lt;&lt; s[i] &lt;&lt; endl;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-count">
+          <div class="code-block">
+<pre><span class="comment">// 统计字符串里某个字符出现了几次</span>
+<span class="type">int</span> cnt = <span class="number">0</span>;
+<span class="type">char</span> ch = <span class="string">'l'</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++) {
+    <span class="keyword">if</span> (s[i] == ch) cnt++;
+}
+cout &lt;&lt; cnt &lt;&lt; endl;
+
+<span class="comment">// 统计数字字符个数：判断 s[i] 是否在 '0'~'9'</span>
+<span class="comment">// if (s[i] &gt;= '0' &amp;&amp; s[i] &lt;= '9') cnt++;</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-find">
+          <div class="code-block">
+<pre><span class="comment">// 查找字符第一次出现的位置，没找到返回 -1</span>
+<span class="type">char</span> ch = <span class="string">'l'</span>;
+<span class="type">int</span> pos = -<span class="number">1</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++) {
+    <span class="keyword">if</span> (s[i] == ch) { pos = i; <span class="keyword">break</span>; }
+}
+cout &lt;&lt; pos &lt;&lt; endl;   <span class="comment">// 从 0 开始数的下标</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-cmp">
+          <div class="code-block">
+<pre><span class="comment">// string 直接比较</span>
+<span class="type">string</span> a = <span class="string">"abc"</span>, b = <span class="string">"abd"</span>;
+<span class="keyword">if</span> (a == b) cout &lt;&lt; <span class="string">"相等"</span> &lt;&lt; endl;
+<span class="keyword">else if</span> (a &lt; b) cout &lt;&lt; <span class="string">"a 较小"</span> &lt;&lt; endl;
+<span class="keyword">else</span> cout &lt;&lt; <span class="string">"a 较大"</span> &lt;&lt; endl;
+
+<span class="comment">// 字符数组用 strcmp</span>
+<span class="comment">// strcmp(a, b) == 0 表示相等</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-trap">
+          <div class="code-block">
+<pre><span class="comment">// ❌ 错误 1：字符数组用 == 比较内容</span>
+<span class="keyword">char</span> a[<span class="number">10</span>] = <span class="string">"hi"</span>, b[<span class="number">10</span>] = <span class="string">"hi"</span>;
+<span class="keyword">if</span> (a == b)   <span class="comment">// 比较的是地址，不是内容，通常不相等</span>
+
+<span class="comment">// ✅ 用 strcmp</span>
+<span class="keyword">if</span> (strcmp(a, b) == <span class="number">0</span>)
+
+<span class="comment">// ❌ 错误 2：判等写成赋值</span>
+<span class="keyword">if</span> (x = <span class="number">1</span>)   <span class="comment">// 这是赋值，应为 x == 1</span>
+
+<span class="comment">// ❌ 错误 3：把"第几个"当下标</span>
+<span class="comment">// 第 1 个字符的下标是 0，不是 1</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 六、小测验 -->
+    <section>
+      <h2 class="section-title"><span class="badge">6</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 七、小贴士 -->
+    <div class="tips-section">
+      <h3>💡 小贴士</h3>
+      <ul>
+        <li><strong>先取长度再遍历</strong>：<code>int len = s.length();</code>，循环写 <code>i &lt; len</code>。</li>
+        <li><strong>下标从 0 开始</strong>：第 1 个字符是 <code>s[0]</code>，最后是 <code>s[len-1]</code>。</li>
+        <li><strong>查找先设 -1</strong>：遍历完还是 -1，就说明没找到。</li>
+        <li><strong>找到可以 break</strong>：只要第一个位置，找到就能提前结束循环。</li>
+        <li><strong>字符范围判断</strong>：数字 <code>'0'~'9'</code>，大写 <code>'A'~'Z'</code>，小写 <code>'a'~'z'</code>。</li>
+        <li><strong>string 用 ==，字符数组用 strcmp</strong>：比较内容的方式不一样。</li>
+        <li><strong>空格也算字符</strong>：统计总字符数时别漏掉空格。</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="container">
+      <p>信奥 C++ 星辰班 · 第17课 字符串的应用</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof history !== "undefined" && "scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    /* ================= 可视化器：字符串分析器 ================= */
+    function l17Run() {
+      var s = document.getElementById("l17s").value;
+      var ch = document.getElementById("l17ch").value;
+      var t = document.getElementById("l17t").value;
+      var op = document.getElementById("l17op").value;
+      var out = document.getElementById("l17out");
+      var codeEl = document.getElementById("l17code");
+      var msg = document.getElementById("l17msg");
+      var lines = [];
+      var code = "";
+
+      if (op === "count") {
+        var map = {};
+        var order = [];
+        for (var i = 0; i < s.length; i++) {
+          var c = s.charAt(i);
+          if (map[c] === undefined) { map[c] = 0; order.push(c); }
+          map[c]++;
+        }
+        lines.push("字符串 s = \"" + s + "\"");
+        lines.push("总字符数 = " + s.length);
+        lines.push("—— 各字符出现次数 ——");
+        order.forEach(function (c) {
+          var show = c === " " ? "空格" : c;
+          lines.push("  '" + show + "' 出现 " + map[c] + " 次");
+        });
+        if (s === "") lines.push("（空字符串，没有字符可统计）");
+        code = "int len = s.length();\n" +
+          "for (int i = 0; i < len; i++) {\n" +
+          "    if (s[i] == ch) cnt++;   // 逐个统计\n" +
+          "}";
+        msg.textContent = "遍历一遍，统计出总字符数和每个字符出现的次数。";
+      } else if (op === "find") {
+        var target = ch.length ? ch.charAt(0) : "";
+        var pos = -1;
+        for (var j = 0; j < s.length; j++) {
+          if (s.charAt(j) === target) { pos = j; break; }
+        }
+        lines.push("在 \"" + s + "\" 里查找字符 '" + target + "'：");
+        if (target === "") {
+          lines.push("没输入要查找的字符哦。");
+        } else if (pos === -1) {
+          lines.push("没找到，返回 -1");
+        } else {
+          lines.push("第一次出现在下标 " + pos + "（也就是第 " + (pos + 1) + " 个字符）");
+        }
+        code = "char ch = '" + target + "';\n" +
+          "int pos = -1;\n" +
+          "for (int i = 0; i < s.length(); i++) {\n" +
+          "    if (s[i] == ch) { pos = i; break; }\n" +
+          "}";
+        msg.textContent = "从头找，找到第一个就记下下标并 break。";
+      } else {
+        var cmp = 0;
+        var k = 0;
+        var limit = Math.min(s.length, t.length);
+        while (k < limit && s.charCodeAt(k) === t.charCodeAt(k)) k++;
+        if (k < limit) {
+          cmp = s.charCodeAt(k) - t.charCodeAt(k);
+        } else {
+          cmp = s.length - t.length;
+        }
+        lines.push("字符串 s = \"" + s + "\"");
+        lines.push("字符串 t = \"" + t + "\"");
+        if (cmp === 0) {
+          lines.push("两个字符串相等 ✅");
+        } else {
+          lines.push("从第 " + (k + 1) + " 个字符开始不同：");
+          lines.push("  s 的字符 = '" + (s.charAt(k) || "无") + "' (ASCII " + (k < s.length ? s.charCodeAt(k) : "-") + ")");
+          lines.push("  t 的字符 = '" + (t.charAt(k) || "无") + "' (ASCII " + (k < t.length ? t.charCodeAt(k) : "-") + ")");
+          lines.push("按 ASCII 码比较：s " + (cmp < 0 ? "较小" : "较大"));
+        }
+        code = "if (a == b)      // string 判断相等\n" +
+          "    cout << \"相等\";\n" +
+          "else if (a < b)  // 按 ASCII 逐位比较\n" +
+          "    cout << \"a 较小\";";
+        msg.textContent = "比较从第 1 个字符开始，按 ASCII 码逐个比。";
+      }
+
+      out.textContent = lines.join("\n");
+      codeEl.textContent = code;
+    }
+
+    /* ================= 代码标签 ================= */
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    /* ================= 小测验 ================= */
+    var QUIZ_BANK = [
+      { type: "choice", q: "统计字符串中大写字母的个数，判断条件写哪个？", options: ["ch >= 'A' && ch <= 'Z'", "ch >= 'a' && ch <= 'z'", "ch >= '0' && ch <= '9'", "ch == 'A'"], a: 0,
+        explain: "大写字母在 'A' 到 'Z' 之间，用小写字母范围就统计错了。" },
+      { type: "choice", q: "字符串 s 的长度用 s.length()，返回的是？", options: ["含 '\\0' 的总格数", "字符个数（不含 '\\0'）", "数组长度", "字符的 ASCII 码"], a: 1,
+        explain: "length() 返回字符个数，不包含结束标志 '\\0'。" },
+      { type: "choice", q: "查找字符第一次出现的位置，如果没找到，通常返回？", options: ["0", "1", "-1", "字符串长度"], a: 2,
+        explain: "常见做法是把结果先设为 -1，没找到就保持 -1。" },
+      { type: "choice", q: "判断两个 string 是否相等，可以怎么写？", options: ["if (a = b)", "if (a == b)", "if (a is b)", "if (a eq b)"], a: 1,
+        explain: "判断相等用两个等号 ==；一个等号是赋值。" },
+      { type: "choice", q: "比较两个字符数组的内容，应该用哪个？", options: ["==", "strcmp", "strlen", "size"], a: 1,
+        explain: "字符数组用 == 比的是地址，要用 strcmp 比较内容。" },
+      { type: "choice", q: "统计字符串里数字字符的个数，条件写哪个？", options: ["s[i] >= '0' && s[i] <= '9'", "s[i] >= 0 && s[i] <= 9", "s[i] == 0", "s[i] >= 'a'"], a: 0,
+        explain: "数字字符是从 '0' 到 '9'，要用字符常量和字符比较。" },
+      { type: "choice", q: "（GESP 风格题）字符串 \"abc\" 中，第 1 个字符和最后一个字符的下标分别是？", options: ["1 和 3", "0 和 2", "0 和 3", "1 和 2"], a: 1,
+        explain: "下标从 0 开始，3 个字符是 0、1、2，所以首下标 0、末下标 2。" },
+      { type: "choice", q: "（GESP 风格题）要把字符串里的小写字母转成大写，需要把字符的 ASCII 码？", options: ["加 1", "减去 32", "加上 32", "乘以 2"], a: 1,
+        explain: "同一字母大写比小写 ASCII 码小 32，所以小写转大写要减去 32。" },
+      { type: "judge", q: "判断：string 类型可以直接用 + 把两个字符串拼接起来。", a: true,
+        explain: "对，string 支持用 + 拼接，例如 a + b。" },
+      { type: "judge", q: "判断：字符串里的空格不算字符。", a: false,
+        explain: "错，空格也是一个字符，统计总字符数时要算进去。" },
+      { type: "judge", q: "判断：两个字符串比较时，是按 ASCII 码从前往后逐位比较的。", a: true,
+        explain: "对，先比第 1 个字符，相同再比下一个。" },
+      { type: "judge", q: "判断：s.size() 和 s.length() 都能用来获取字符串长度。", a: true,
+        explain: "对，两者对 string 都能取长度，效果一样。" },
+      { type: "judge", q: "判断：字符数组之间可以直接用 == 比较内容是否相同。", a: false,
+        explain: "错，== 比较的是地址，要用 strcmp 比较内容。" },
+      { type: "judge", q: "判断：查找字符时，只要第一个位置，找到就可以用 break 提前结束循环。", a: true,
+        explain: "对，找到目标后没必要继续遍历，可以 break。" }
+    ];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！字符串遍历、统计、查找、比较都掌握啦！" :
+          right >= 6 ? "不错！再把查找返回 -1 和 strcmp 复习一下就更稳。" :
+          right >= 4 ? "还行，重点看第 2 节统计查找和第 3 节比较。" :
+          "别灰心，先把「下标从 0 开始」和「遍历框架」记牢。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("l17run").addEventListener("click", l17Run);
+      initTabs();
+      initQuiz();
+      l17Run();
+    });
+  </script>
+</body>
+</html>

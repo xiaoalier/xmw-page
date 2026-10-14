@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第22课 二维数组的应用 - 求和、转置、最值、对角线</title>
+  <style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card.c4 .n-name { color: var(--purple); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .cm { color: var(--muted); }
+    .anno .hl { color: var(--accent-3); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field textarea { resize: vertical; min-height: 96px; line-height: 1.6; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 14px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+      max-height: 220px; overflow-y: auto;
+    }
+    .console .muted { color: var(--muted); }
+    .mtx {
+      display: inline-grid; gap: 6px;
+      max-width: 100%; overflow-x: auto; padding-bottom: 4px;
+    }
+    .mtx .mcell {
+      min-width: 52px; height: 52px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg);
+      font-family: "Consolas", monospace;
+      transition: all 0.18s ease;
+    }
+    .mtx .mcell .v { font-size: 16px; font-weight: 700; color: var(--text); }
+    .mtx .mcell .idx { font-size: 10px; color: var(--muted); }
+    .mtx .mcell.hl-ok { border-color: var(--accent-3); background: rgba(255, 180, 84, 0.22); }
+    .mtx .mcell.hl-ok .v { color: var(--accent-3); }
+    .mtx .mcell.hl-diag { border-color: var(--purple); background: rgba(167, 139, 250, 0.22); }
+    .mtx .mcell.hl-diag .v { color: var(--purple); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>第22课 · 二维数组的应用</h1>
+      <p class="subtitle">矩阵求和、转置、最值、对角线，一套两层循环走天下</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 一、四种常见应用 -->
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>四种常见应用</h2>
+      <div class="nest-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="nest-card c1">
+          <div class="n-name">① 求和</div>
+          <p>用两层循环把每个 <code>a[i][j]</code> 加进同一个变量。想求每行的和，就把求和变量放在外层，每行先清零。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">② 转置</div>
+          <p>把「第 i 行第 j 列」搬到「第 j 行第 i 列」，也就是 <code>b[j][i] = a[i][j]</code>。行和列互换，矩阵会「翻个身」。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">③ 最值</div>
+          <p>先假设第一个数是最大（最小）的，再遍历剩下的，遇到更大（更小）的就更新，顺便记住位置 <code>(i,j)</code>。</p>
+        </div>
+        <div class="nest-card c4">
+          <div class="n-name">④ 对角线</div>
+          <p>正方形矩阵里，主对角线是 <code>i == j</code> 的格子（左上到右下），副对角线是 <code>i + j == n - 1</code>。</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧩</span>核心就一句话：外层行、内层列，对每个 a[i][j] 做处理</div>
+        <div class="anno">
+<pre><span class="cm">// 求和：把所有元素加起来</span>
+<span class="hl">int sum = 0;</span>
+for (int i = 0; i &lt; n; i++)
+    for (int j = 0; j &lt; m; j++)
+        <span class="hl">sum = sum + a[i][j];</span>
+
+<span class="cm">// 转置：行列互换</span>
+for (int i = 0; i &lt; n; i++)
+    for (int j = 0; j &lt; m; j++)
+        <span class="hl">b[j][i] = a[i][j];</span>
+
+<span class="cm">// 主对角线：只处理 i == j 的格子</span>
+for (int i = 0; i &lt; n; i++)
+    <span class="hl">sum = sum + a[i][i];</span></pre>
+        </div>
+        <p class="mem-note">⚠️ <b>转置</b>的结果矩阵是「原列数 × 原行数」，定义 b 的时候别把行列写反；<b>对角线</b>只有正方形矩阵（n 行 n 列）才方便这样取。</p>
+      </div>
+    </section>
+
+    <!-- 二、矩阵实验室 -->
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>矩阵实验室</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧮</span>输入一个矩阵，演示求和 / 转置 / 最值 / 对角线</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field">
+              <label>矩阵内容（每行一行数字，空格分隔，1~6 列）</label>
+              <textarea id="mxData" spellcheck="false">3 1 4
+1 5 9
+2 6 5</textarea>
+            </div>
+            <div class="field">
+              <label>演示的操作</label>
+              <select id="mxOp">
+                <option value="sum">求和（所有元素之和）</option>
+                <option value="rows">每行的和</option>
+                <option value="trans">转置</option>
+                <option value="max">最大值（含位置）</option>
+                <option value="min">最小值（含位置）</option>
+                <option value="diag">主对角线之和</option>
+              </select>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="mxRun">▶ 演示</button>
+              <button class="control-btn secondary" id="mxRand">随机矩阵</button>
+            </div>
+            <div class="conv-msg" id="mxMsg">填一个矩阵，选个操作，点「演示」…</div>
+            <div class="sim-arr-label" style="margin-top: 6px;">对应代码</div>
+            <div class="lp-code"><pre id="mxCode">--</pre></div>
+          </div>
+          <div>
+            <div class="two-col">
+              <div>
+                <div class="sim-arr-label">原矩阵</div>
+                <div id="mxIn"><span class="console muted">还没有载入矩阵…</span></div>
+              </div>
+              <div>
+                <div class="sim-arr-label" id="mxOutLabel">结果</div>
+                <div id="mxOut"><span class="console muted">--</span></div>
+              </div>
+            </div>
+            <div class="step-final" id="mxResult" style="display: none;"></div>
+            <div class="sim-arr-label" style="margin-top: 14px;">计算过程</div>
+            <div class="console" id="mxLog"><span class="muted">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 三、代码 -->
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="sum">矩阵求和</div>
+          <div class="code-tab" data-tab="trans">矩阵转置</div>
+          <div class="code-tab" data-tab="best">求最值</div>
+          <div class="code-tab" data-tab="diag">对角线</div>
+        </div>
+
+        <div class="code-content active" id="tab-sum">
+          <div class="code-block">
+<pre><span class="comment">// 求矩阵所有元素之和</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> a[<span class="number">100</span>][<span class="number">100</span>];
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; m; j++)
+            cin &gt;&gt; a[i][j];
+
+    <span class="type">int</span> sum = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) {
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; m; j++) {
+            sum = sum + a[i][j];
+        }
+    }
+    cout &lt;&lt; sum &lt;&lt; endl;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-trans">
+          <div class="code-block">
+<pre><span class="comment">// 矩阵转置：b[j][i] = a[i][j]</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> a[<span class="number">100</span>][<span class="number">100</span>], b[<span class="number">100</span>][<span class="number">100</span>];
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; m; j++)
+            cin &gt;&gt; a[i][j];
+
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; m; j++)
+            b[j][i] = a[i][j];   <span class="comment">// 行列互换</span>
+
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; m; i++) {   <span class="comment">// 结果有 m 行</span>
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; n; j++) {   <span class="comment">// 每行 n 个</span>
+            cout &lt;&lt; b[i][j] &lt;&lt; <span class="string">" "</span>;
+        }
+        cout &lt;&lt; endl;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-best">
+          <div class="code-block">
+<pre><span class="comment">// 求最大值和它的位置</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> a[<span class="number">100</span>][<span class="number">100</span>];
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; m; j++)
+            cin &gt;&gt; a[i][j];
+
+    <span class="type">int</span> mx = a[<span class="number">0</span>][<span class="number">0</span>], mi = <span class="number">0</span>, mj = <span class="number">0</span>;  <span class="comment">// 先假设左上角最大</span>
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) {
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; m; j++) {
+            <span class="keyword">if</span> (a[i][j] &gt; mx) {   <span class="comment">// 遇到更大的就更新</span>
+                mx = a[i][j];
+                mi = i;
+                mj = j;
+            }
+        }
+    }
+    cout &lt;&lt; mx &lt;&lt; <span class="string">" "</span> &lt;&lt; mi &lt;&lt; <span class="string">" "</span> &lt;&lt; mj &lt;&lt; endl;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-diag">
+          <div class="code-block">
+<pre><span class="comment">// 主对角线之和（正方形矩阵）</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> a[<span class="number">100</span>][<span class="number">100</span>];
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n;
+    cin &gt;&gt; n;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; n; j++)
+            cin &gt;&gt; a[i][j];
+
+    <span class="type">int</span> sum = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) {
+        sum = sum + a[i][i];   <span class="comment">// 行下标 == 列下标</span>
+    }
+    cout &lt;&lt; sum &lt;&lt; endl;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 四、小测验 -->
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 五、小贴士 -->
+    <div class="tips-section">
+      <h3>💡 小贴士</h3>
+      <ul>
+        <li><strong>求和要清变量</strong>：求总和时 <code>sum = 0</code> 放循环外面；求每行的和时，清零放外层循环里。</li>
+        <li><strong>转置靠行列互换</strong>：核心就是 <code>b[j][i] = a[i][j]</code>，结果矩阵是「原列数 × 原行数」。</li>
+        <li><strong>最值先设首元素</strong>：先把 <code>a[0][0]</code> 当作最大（最小），再逐个比较更新。</li>
+        <li><strong>主对角线</strong>：只处理 <code>i == j</code> 的格子，一个循环就够了。</li>
+        <li><strong>副对角线</strong>：条件是 <code>i + j == n - 1</code>，别和主对角线混了。</li>
+        <li><strong>对角线要方阵</strong>：n 行 n 列才方便这样取，行列不等时先想清楚题意。</li>
+        <li><strong>越界要避免</strong>：定义多大就用到下标多大减 1，转置写 b 时尤其容易写反行列。</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="container">
+      <p>信奥 C++ 星辰班 · 第22课 二维数组的应用</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof history !== "undefined" && "scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    function lpGet(id) { return document.getElementById(id); }
+
+    function parseMx() {
+      var lines = lpGet("mxData").value.split("\n").filter(function (l) { return l.trim() !== ""; });
+      var data = [];
+      var cols = -1;
+      for (var i = 0; i < lines.length; i++) {
+        var nums = lines[i].trim().split(/[\s,]+/).filter(function (x) { return x !== ""; }).map(Number);
+        if (nums.length === 0) continue;
+        if (cols === -1) cols = nums.length;
+        if (nums.length > 6) return { err: "每行最多 6 个数哦" };
+        if (cols !== nums.length) return { err: "每一行的数字个数要一样哦" };
+        data.push(nums);
+      }
+      if (data.length === 0) return { err: "至少要输入一行数字" };
+      if (data.length > 6) return { err: "最多 6 行哦" };
+      return { rows: data.length, cols: cols, data: data };
+    }
+
+    function buildGrid(mat, hiSet, style) {
+      var grid = document.createElement("div");
+      grid.className = "mtx";
+      grid.style.gridTemplateColumns = "repeat(" + mat.cols + ", minmax(52px, 1fr))";
+      for (var i = 0; i < mat.rows; i++) {
+        for (var j = 0; j < mat.cols; j++) {
+          var cell = document.createElement("div");
+          cell.className = "mcell";
+          if (hiSet && hiSet[i + "_" + j]) cell.classList.add(style || "hl-ok");
+          cell.innerHTML = '<span class="v">' + mat.data[i][j] + '</span><span class="idx">[' + i + '][' + j + ']</span>';
+          grid.appendChild(cell);
+        }
+      }
+      return grid;
+    }
+
+    function matOf(data) { return { rows: data.length, cols: data[0].length, data: data }; }
+
+    function mxRand() {
+      var r = Math.floor(Math.random() * 3) + 3;
+      var c = Math.floor(Math.random() * 3) + 3;
+      var lines = [];
+      for (var i = 0; i < r; i++) {
+        var row = [];
+        for (var j = 0; j < c; j++) row.push(Math.floor(Math.random() * 90) + 10);
+        lines.push(row.join(" "));
+      }
+      lpGet("mxData").value = lines.join("\n");
+      mxRun();
+    }
+
+    function mxRun() {
+      var m = parseMx();
+      var inputWrap = lpGet("mxIn");
+      var outWrap = lpGet("mxOut");
+      var log = lpGet("mxLog");
+      var result = lpGet("mxResult");
+      inputWrap.innerHTML = "";
+      outWrap.innerHTML = '<span class="console muted">--</span>';
+      result.style.display = "none";
+      log.innerHTML = '<span class="muted">--</span>';
+      if (m.err) { lpGet("mxMsg").textContent = m.err; return; }
+
+      inputWrap.appendChild(buildGrid(m, null));
+      var op = lpGet("mxOp").value;
+      var mat = matOf(m.data);
+      var n = m.rows, mm = m.cols;
+
+      if (op === "sum" || op === "rows") {
+        var sum = 0, steps = [];
+        for (var i = 0; i < n; i++) {
+          var rs = 0;
+          for (var j = 0; j < mm; j++) { rs += m.data[i][j]; }
+          steps.push("第 " + i + " 行之和 = " + rs);
+          sum += rs;
+        }
+        var hi = {}, all = {};
+        for (var a = 0; a < n; a++) for (var b = 0; b < mm; b++) { all[a + "_" + b] = true; hi[a + "_" + b] = true; }
+        inputWrap.innerHTML = "";
+        inputWrap.appendChild(buildGrid(m, hi, "hl-ok"));
+        if (op === "sum") {
+          result.style.display = "block";
+          result.innerHTML = "矩阵所有元素之和 = <b>" + sum + "</b>";
+          log.textContent = steps.join("\n");
+          lpGet("mxOutLabel").textContent = "结果";
+          outWrap.innerHTML = '<div class="step-final" style="margin:0;">sum = <b>' + sum + '</b></div>';
+          lpGet("mxCode").textContent =
+            "int sum = 0;\nfor (int i = 0; i < " + n + "; i++)\n    for (int j = 0; j < " + mm + "; j++)\n        sum = sum + a[i][j];\ncout << sum;";
+          lpGet("mxMsg").textContent = "求和完成：把每个格子都加进同一个 sum";
+        } else {
+          result.style.display = "block";
+          result.innerHTML = "每行的和已经算出来了，见右侧「结果」";
+          log.textContent = steps.join("\n");
+          lpGet("mxOutLabel").textContent = "每行的和";
+          var wrap = document.createElement("div");
+          wrap.className = "console";
+          wrap.textContent = steps.map(function (s) { return s.replace("第 ", "第 "); }).join("\n");
+          outWrap.innerHTML = "";
+          outWrap.appendChild(wrap);
+          lpGet("mxCode").textContent =
+            "for (int i = 0; i < " + n + "; i++) {\n    int s = 0;\n    for (int j = 0; j < " + mm + "; j++)\n        s = s + a[i][j];\n    cout << s << endl;\n}";
+          lpGet("mxMsg").textContent = "每行的和：外层控制行，每行先把 s 清 0 再累加";
+        }
+      } else if (op === "trans") {
+        var t = [];
+        for (var j2 = 0; j2 < mm; j2++) { var row2 = []; for (var i2 = 0; i2 < n; i2++) row2.push(m.data[i2][j2]); t.push(row2); }
+        var tmat = matOf(t);
+        outWrap.innerHTML = "";
+        outWrap.appendChild(buildGrid(tmat, null));
+        lpGet("mxOutLabel").textContent = "转置后（" + tmat.rows + " 行 × " + tmat.cols + " 列）";
+        result.style.display = "block";
+        result.innerHTML = "转置完成：原来的第 i 行第 j 列，跑到了第 j 行第 i 列";
+        log.textContent = "规则：b[j][i] = a[i][j]";
+        lpGet("mxCode").textContent =
+          "for (int i = 0; i < " + n + "; i++)\n    for (int j = 0; j < " + mm + "; j++)\n        b[j][i] = a[i][j];";
+        lpGet("mxMsg").textContent = "转置完成：行列互换，结果变成 " + tmat.rows + " 行 × " + tmat.cols + " 列";
+      } else if (op === "max" || op === "min") {
+        var best = m.data[0][0], bi = 0, bj = 0, trace = [];
+        for (var i3 = 0; i3 < n; i3++) {
+          for (var j3 = 0; j3 < mm; j3++) {
+            var v = m.data[i3][j3];
+            var better = op === "max" ? (v > best) : (v < best);
+            if (better) { best = v; bi = i3; bj = j3; trace.push("发现更" + (op === "max" ? "大" : "小") + "的值 " + v + "，记在 [" + i3 + "][" + j3 + "]"); }
+          }
+        }
+        var hi3 = {}; hi3[bi + "_" + bj] = true;
+        inputWrap.innerHTML = "";
+        inputWrap.appendChild(buildGrid(m, hi3, "hl-ok"));
+        outWrap.innerHTML = '<div class="step-final" style="margin:0;">' + (op === "max" ? "最大" : "最小") + '值 = <b>' + best + '</b>，位置 a[' + bi + '][' + bj + ']</div>';
+        lpGet("mxOutLabel").textContent = (op === "max" ? "最大值位置" : "最小值位置");
+        result.style.display = "block";
+        result.innerHTML = (op === "max" ? "最大" : "最小") + "值是 <b>" + best + "</b>，在第 " + (bi + 1) + " 行第 " + (bj + 1) + " 列";
+        log.textContent = trace.length ? trace.join("\n") : "第一个数就是全部里最好的，没有更新过";
+        lpGet("mxCode").textContent =
+          "int best = a[0][0], bi = 0, bj = 0;\nfor (int i = 0; i < " + n + "; i++)\n    for (int j = 0; j < " + mm + "; j++)\n        if (a[i][j] " + (op === "max" ? ">" : "<") + " best) { best = a[i][j]; bi = i; bj = j; }\ncout << best << \" \" << bi << \" \" << bj;";
+        lpGet("mxMsg").textContent = "最值找到啦：先假设左上角，再逐个比较更新";
+      } else if (op === "diag") {
+        if (n !== mm) {
+          lpGet("mxMsg").textContent = "主对角线要正方形矩阵（行数 = 列数）哦，现在不是";
+          return;
+        }
+        var dsum = 0, hi4 = {}, dlog = [];
+        for (var d = 0; d < n; d++) { dsum += m.data[d][d]; hi4[d + "_" + d] = true; dlog.push("a[" + d + "][" + d + "] = " + m.data[d][d] + "，累加得 " + dsum); }
+        inputWrap.innerHTML = "";
+        inputWrap.appendChild(buildGrid(m, hi4, "hl-diag"));
+        outWrap.innerHTML = '<div class="step-final" style="margin:0;">主对角线之和 = <b>' + dsum + '</b></div>';
+        lpGet("mxOutLabel").textContent = "主对角线";
+        result.style.display = "block";
+        result.innerHTML = "主对角线（i == j 的格子）之和 = <b>" + dsum + "</b>";
+        log.textContent = dlog.join("\n");
+        lpGet("mxCode").textContent =
+          "int sum = 0;\nfor (int i = 0; i < " + n + "; i++)\n    sum = sum + a[i][i];\ncout << sum;";
+        lpGet("mxMsg").textContent = "主对角线就是 i == j 的格子，一个循环就能加完";
+      }
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    var QUIZ_BANK = [
+      { type: "choice", q: "求矩阵所有元素之和，sum 应该在哪里清零？", options: ["循环外面，只清一次", "内层循环里每次都清", "外层循环里每行清", "不用清"], a: 0,
+        explain: "求总和只在开始清一次 0；求每行的和才需要在每行开头清 0。" },
+      { type: "choice", q: "转置的核心语句是？", options: ["b[j][i] = a[i][j]", "b[i][j] = a[i][j]", "b[i][i] = a[j][j]", "b[j][j] = a[i][i]"], a: 0,
+        explain: "行和列互换，所以是 b[j][i] = a[i][j]。" },
+      { type: "choice", q: "n 行 m 列的矩阵，转置后是几行几列？", options: ["n 行 m 列", "m 行 n 列", "n 行 n 列", "m 行 m 列"], a: 1,
+        explain: "行和列互换，变成 m 行 n 列。" },
+      { type: "judge", q: "判断：主对角线上的元素满足 i == j。", a: true,
+        explain: "对，主对角线从左上到右下，行下标等于列下标。" },
+      { type: "choice", q: "求最大值时，一般先把谁当作当前最大？", options: ["a[0][0]", "a[n-1][m-1]", "0", "随便一个随机数"], a: 0,
+        explain: "先把第一个元素当作最大，再逐个比较更新。" },
+      { type: "choice", q: "副对角线的下标满足？", options: ["i == j", "i + j == n - 1", "i > j", "i < j"], a: 1,
+        explain: "副对角线从右上到左下，i + j == n - 1（正方形矩阵）。" },
+      { type: "judge", q: "判断：求每行的和时，求和变量要放在外层循环里、内层循环前清零。", a: true,
+        explain: "对，每换一行都要重新从 0 开始累加。" },
+      { type: "choice", q: "求主对角线之和，循环变量怎么取？", options: ["a[i][i]", "a[i][j]", "a[i][n]", "a[0][i]"], a: 0,
+        explain: "主对角线 i == j，所以取 a[i][i]。" },
+      { type: "choice", q: "矩阵里每一行数字个数不一样，说明？", options: ["不构成规则的矩阵，要检查输入", "完全没问题", "一定是转置", "一定是方阵"], a: 0,
+        explain: "规则的矩阵每一行个数应该相同，否则要检查数据。" },
+      { type: "judge", q: "判断：转置只能对方阵（行数等于列数）做。", a: false,
+        explain: "错，任意 n 行 m 列都能转置，结果变成 m 行 n 列。" },
+      { type: "choice", q: "（GESP 风格题）输入一个 n 行 m 列矩阵并求所有元素最大值，通常要几层循环？", options: ["1 层", "2 层", "3 层", "4 层"], a: 1,
+        explain: "外层行、内层列，两层就能扫描全部元素。" },
+      { type: "choice", q: "（GESP 风格题）把矩阵的行和列互换，这个操作叫？", options: ["求和", "转置", "排序", "去重"], a: 1,
+        explain: "行和列互换就是转置。" },
+      { type: "judge", q: "判断：（GESP 风格题）二维数组常用来存储和操作矩阵数据。", a: true,
+        explain: "对，矩阵、表格这类数据用二维数组来存最自然。" },
+      { type: "choice", q: "主对角线之和的代码，sum 累加的范围是？", options: ["i 从 0 到 n-1，累加 a[i][i]", "所有 a[i][j]", "第一行", "第一列"], a: 0,
+        explain: "只累加 i == j 的格子，一个循环即可。" },
+      { type: "judge", q: "判断：求和、转置、最值都可以用同一套「外层行、内层列」的遍历框架。", a: true,
+        explain: "对，先写两层遍历，再根据需要对每个 a[i][j] 做不同处理。" }
+    ];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q.replace(/\n/g, "<br>");
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！矩阵求和、转置、最值都拿下了！" :
+          right >= 6 ? "不错！再去矩阵实验室多试几个操作吧～" :
+          right >= 4 ? "还行，把「外层行、内层列」的遍历框架再看一遍！" :
+          "别灰心，重点看第 1 节的四种应用和第 3 节的代码。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("mxRun").addEventListener("click", mxRun);
+      document.getElementById("mxRand").addEventListener("click", mxRand);
+      document.getElementById("mxOp").addEventListener("change", mxRun);
+      mxRun();
+      initTabs();
+      initQuiz();
+    });
+  </script>
+</body>
+</html>

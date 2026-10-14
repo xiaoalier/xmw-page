@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第10课 初识循环3 - break 与 continue</title>
+  <style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .nest-card pre {
+      margin: 10px 0 0;
+      font-family: "Consolas", monospace; font-size: 12px; line-height: 1.6;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px; color: #c6d0e0; overflow-x: auto;
+    }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .when-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .when-table th { background: rgba(76, 194, 255, 0.1); color: var(--accent); padding: 10px 14px; text-align: left; }
+    .when-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
+    .when-table code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12); padding: 2px 6px; border-radius: 4px; font-size: 13px;
+    }
+    .conv-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lab-strip { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cell { width: 46px; text-align: center; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; }
+    .cell .top {
+      height: 34px; display: flex; align-items: center; justify-content: center;
+      font-family: "Consolas", monospace; font-size: 17px; font-weight: 700;
+      background: var(--bg); color: var(--accent);
+    }
+    .cell .bot {
+      height: 22px; font-size: 10px; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 255, 255, 0.04); font-family: "Consolas", monospace;
+    }
+    .cell.active .top { background: rgba(255, 180, 84, 0.25); color: var(--accent-3); }
+    .cell.active .bot { background: rgba(255, 180, 84, 0.2); color: var(--accent-3); }
+    .cell.stop .top { background: rgba(255, 107, 157, 0.22); color: var(--accent-2); }
+    .cell.stop .bot { background: rgba(255, 107, 157, 0.16); color: var(--accent-2); }
+    .cell.skip .top { background: rgba(255, 255, 255, 0.05); color: var(--muted); text-decoration: line-through; }
+    .cell.skip .bot { background: rgba(255, 255, 255, 0.03); color: var(--muted); }
+    .cell.ok .top { background: rgba(126, 231, 135, 0.16); color: var(--green); }
+    .cell.ok .bot { background: rgba(126, 231, 135, 0.1); color: var(--green); }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 16px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>第10课 · 初识循环（三）</h1>
+      <p class="subtitle">break 跳出整个循环，continue 跳过本次，for / while 都能用</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 一、认识 -->
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>认识 break 和 continue</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">break：跳出整个循环</div>
+          <p>一遇到 <code>break</code>，<b>整个循环立刻结束</b>，后面的循环都不再执行。适合「找到了就停」。</p>
+<pre>for (int i = 1; i &lt;= 5; i++) {
+    if (i == 3) break;   // 到 3 就停
+    cout &lt;&lt; i;           // 输出 1 2
+}</pre>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">continue：跳过本次</div>
+          <p>一遇到 <code>continue</code>，<b>跳过本次循环剩下的代码</b>，直接进入下一次循环。适合「这些不要」。</p>
+<pre>for (int i = 1; i &lt;= 5; i++) {
+    if (i % 2 == 1) continue;  // 奇数跳过
+    cout &lt;&lt; i;                  // 输出 2 4
+}</pre>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">for / while 都能用</div>
+          <p>两者都能放进 <code>for</code>、<code>while</code>、<code>do-while</code>。<code>while</code> 里用 <code>continue</code> 要小心（见第 2 节）。</p>
+        </div>
+      </div>
+      <div class="panel" style="padding: 0; overflow: hidden;">
+        <table class="when-table">
+          <thead>
+            <tr><th>对比</th><th>break</th><th>continue</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>作用</b></td><td>跳出<b>整个循环</b></td><td>跳过<b>本次</b>循环体剩余部分</td></tr>
+            <tr><td><b>循环还继续吗</b></td><td>不继续，直接到循环后面</td><td>继续，进入下一次循环</td></tr>
+            <tr><td><b>for 里下一步去哪</b></td><td>循环外的下一条语句</td><td>循环的「更新」部分</td></tr>
+            <tr><td><b>while 里下一步去哪</b></td><td>循环外的下一条语句</td><td>循环的「条件判断」</td></tr>
+            <tr><td><b>典型用途</b></td><td>找到答案就停、退出死循环</td><td>过滤掉不该处理的数</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 二、易错点 -->
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>两个易错点</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">while 里 continue 要小心</div>
+          <p><code>while</code> 里一遇到 <code>continue</code> 就跳回<b>条件判断</b>。如果变量还没更新就 continue，条件永远不变，就会<b>死循环</b>。</p>
+<pre>// ❌ i++ 在 continue 后面，永远到不了
+int i = 1;
+while (i &lt;= 5) {
+    if (i % 2 == 0) continue;
+    cout &lt;&lt; i;
+    i++;
+}
+
+// ✅ 先把 i++ 放前面
+int i = 0;
+while (i &lt; 5) {
+    i++;
+    if (i % 2 == 0) continue;
+    cout &lt;&lt; i;
+}</pre>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">嵌套循环：break 只跳最近一层</div>
+          <p>内层写 <code>break</code>，只跳出<b>内层</b>，外层照常继续。想一次跳出多层要靠标志变量。</p>
+<pre>for (int i = 1; i &lt;= 3; i++) {
+    for (int j = 1; j &lt;= 3; j++) {
+        if (j == 2) break;  // 只跳出内层
+        cout &lt;&lt; i &lt;&lt; j &lt;&lt; " ";  // 11 21 31
+    }
+}</pre>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">break 经典用法：判断质数</div>
+          <p>从 2 试到 √n，找到因子就 <code>break</code>，不用再试，省时间。</p>
+<pre>int isPrime = 1;
+for (int d = 2; d * d &lt;= n; d++) {
+    if (n % d == 0) {
+        isPrime = 0;
+        break;      // 找到因子，不用试了
+    }
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 三、可视化器 -->
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>break / continue 可视化器</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔀</span>同一个循环，break 和 continue 走的路不一样</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field">
+              <label>循环类型</label>
+              <select id="bcKind">
+                <option value="for">for 循环</option>
+                <option value="while">while 循环</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>控制语句</label>
+              <select id="bcAct">
+                <option value="break">break：到 target 就停</option>
+                <option value="continue">continue：跳过这些</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>n（i 数到几，最大 20）</label>
+              <input id="bcN" value="10">
+            </div>
+            <div class="field" id="bcTargetField">
+              <label>target（break 用，到它就停）</label>
+              <input id="bcTarget" value="5">
+            </div>
+            <div class="field" id="bcModeField" style="display: none;">
+              <label>continue 跳过哪些？</label>
+              <select id="bcMode">
+                <option value="odd">跳过奇数（输出偶数）</option>
+                <option value="even">跳过偶数（输出奇数）</option>
+                <option value="multi3">跳过 3 的倍数</option>
+              </select>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="bcRun">▶ 运行</button>
+            </div>
+            <div class="conv-msg" id="bcMsg">选好类型和语句，点「运行」看它怎么走…</div>
+            <div class="sim-arr-label" style="margin-top: 6px;">对应代码</div>
+            <div class="lp-code"><pre id="bcCode">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">i 的变化（红=break 停、灰划线=continue 跳过）</div>
+            <div class="lab-strip" id="bcChips"></div>
+            <div class="sim-arr-label" style="margin-top: 14px;">实际输出（cout &lt;&lt; i 的结果）</div>
+            <div class="console" id="bcOut"><span class="muted">--</span></div>
+            <div class="step-final" id="bcResult" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 四、代码 -->
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="bfor">break in for</div>
+          <div class="code-tab" data-tab="cfor">continue in for</div>
+          <div class="code-tab" data-tab="bwhile">break in while</div>
+          <div class="code-tab" data-tab="cwhile">continue in while</div>
+          <div class="code-tab" data-tab="prime">判断质数</div>
+        </div>
+
+        <div class="code-content active" id="tab-bfor">
+          <div class="code-block">
+<pre><span class="comment">// break 和 for：找到就停</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="comment">// 输出 1 到 4，i=5 时 break</span>
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++) {
+        <span class="keyword">if</span> (i == <span class="number">5</span>) <span class="keyword">break</span>;
+        cout &lt;&lt; i &lt;&lt; <span class="string">" "</span>;   <span class="comment">// 1 2 3 4</span>
+    }
+
+    <span class="comment">// 找第一个平方 &gt; 50 的数</span>
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">100</span>; i++) {
+        <span class="keyword">if</span> (i * i &gt; <span class="number">50</span>) {
+            cout &lt;&lt; i;      <span class="comment">// 8</span>
+            <span class="keyword">break</span>;
+        }
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-cfor">
+          <div class="code-block">
+<pre><span class="comment">// continue 和 for：过滤掉不要的</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="comment">// 只输出偶数</span>
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++) {
+        <span class="keyword">if</span> (i % <span class="number">2</span> == <span class="number">1</span>) <span class="keyword">continue</span>;  <span class="comment">// 奇数跳过</span>
+        cout &lt;&lt; i &lt;&lt; <span class="string">" "</span>;   <span class="comment">// 2 4 6 8 10</span>
+    }
+
+    <span class="comment">// 跳过 3 的倍数再求和</span>
+    <span class="type">int</span> sum = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">20</span>; i++) {
+        <span class="keyword">if</span> (i % <span class="number">3</span> == <span class="number">0</span>) <span class="keyword">continue</span>;
+        sum += i;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-bwhile">
+          <div class="code-block">
+<pre><span class="comment">// break 和 while：读入直到 0</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> x, sum = <span class="number">0</span>;
+    <span class="keyword">while</span> (cin &gt;&gt; x) {
+        <span class="keyword">if</span> (x == <span class="number">0</span>) <span class="keyword">break</span>;   <span class="comment">// 读到 0 就停</span>
+        sum += x;
+    }
+    cout &lt;&lt; sum &lt;&lt; endl;
+
+    <span class="comment">// 用 break 退出 while(true)</span>
+    <span class="type">int</span> n = <span class="number">1</span>;
+    <span class="keyword">while</span> (<span class="keyword">true</span>) {
+        <span class="keyword">if</span> (n * n &gt; <span class="number">100</span>) <span class="keyword">break</span>;
+        n++;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-cwhile">
+          <div class="code-block">
+<pre><span class="comment">// continue 和 while：先更新变量，再 continue</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> i = <span class="number">0</span>;
+    <span class="keyword">while</span> (i &lt; <span class="number">10</span>) {
+        i++;                        <span class="comment">// 先更新</span>
+        <span class="keyword">if</span> (i % <span class="number">2</span> == <span class="number">1</span>) <span class="keyword">continue</span>;  <span class="comment">// 跳过奇数</span>
+        cout &lt;&lt; i &lt;&lt; <span class="string">" "</span>;           <span class="comment">// 2 4 6 8 10</span>
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+<span class="comment">// ❌ 若先 if(i%2==1) continue; 再 i++，</span>
+<span class="comment">//    continue 后永远不 i++，条件不变 → 死循环！</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-prime">
+          <div class="code-block">
+<pre><span class="comment">// 判断质数：试到 √n，找到因子就 break</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n;
+    cin &gt;&gt; n;
+
+    <span class="type">int</span> isPrime = <span class="number">1</span>;
+    <span class="keyword">for</span> (<span class="type">int</span> d = <span class="number">2</span>; d * d &lt;= n; d++) {
+        <span class="keyword">if</span> (n % d == <span class="number">0</span>) {
+            isPrime = <span class="number">0</span>;
+            <span class="keyword">break</span>;          <span class="comment">// 找到因子，不用再试</span>
+        }
+    }
+    <span class="keyword">if</span> (n &lt; <span class="number">2</span>) isPrime = <span class="number">0</span>;
+
+    <span class="keyword">if</span> (isPrime) cout &lt;&lt; <span class="string">"是质数"</span> &lt;&lt; endl;
+    <span class="keyword">else</span> cout &lt;&lt; <span class="string">"不是质数"</span> &lt;&lt; endl;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 五、小测验 -->
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 六、小贴士 -->
+    <div class="tips-section">
+      <h3>💡 小贴士</h3>
+      <ul>
+        <li><strong>break = 彻底退出</strong>：整个循环立刻结束；<strong>continue = 跳过本次</strong>：剩下代码不跑，直接下一轮</li>
+        <li><strong>for 里 continue 会去更新部分</strong>：<code>i++</code> 照常执行；<b>while 里 continue 直接回条件判断</b></li>
+        <li><strong>while + continue 陷阱</strong>：一定要在 <code>continue</code> <b>之前</b>更新变量（如 <code>i++</code>），否则会死循环</li>
+        <li><strong>break 只跳最近一层</strong>：嵌套循环里内层 break 不影响外层</li>
+        <li><strong>「找到了就停」用 break</strong>：找答案、退出 <code>while(true)</code>、读到 0 为止</li>
+        <li><strong>「这些不要」用 continue</strong>：跳过奇数、跳过 3 的倍数、过滤数据</li>
+        <li><strong>判断质数套路</strong>：从 2 试到 <code>d * d &lt;= n</code>，找到因子就 break</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="container">
+      <p>信奥 C++ 星辰班 · 第10课 初识循环（三）</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof history !== "undefined" && "scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    var LP_TIMERS = [];
+    function clearLpTimers() {
+      LP_TIMERS.forEach(function (t) { clearTimeout(t); });
+      LP_TIMERS = [];
+    }
+    function lpGet(id) { return document.getElementById(id); }
+
+    function skipCond(mode) {
+      return mode === "odd" ? "i % 2 != 0" : mode === "even" ? "i % 2 == 0" : "i % 3 == 0";
+    }
+    function isSkip(i, mode) {
+      return (mode === "odd" && i % 2 !== 0) || (mode === "even" && i % 2 === 0) || (mode === "multi3" && i % 3 === 0);
+    }
+
+    function simulate(kind, action, n, target, mode) {
+      var steps = [], output = [];
+      if (action === "break") {
+        if (kind === "for") {
+          for (var i = 1; i <= n; i++) {
+            if (i === target) { steps.push({ i: i, act: "break" }); break; }
+            steps.push({ i: i, act: "body" }); output.push(i);
+          }
+        } else {
+          var i = 1;
+          while (i <= n) {
+            if (i === target) { steps.push({ i: i, act: "break" }); break; }
+            steps.push({ i: i, act: "body" }); output.push(i);
+            i++;
+          }
+        }
+      } else {
+        if (kind === "for") {
+          for (var i = 1; i <= n; i++) {
+            if (isSkip(i, mode)) { steps.push({ i: i, act: "skip" }); continue; }
+            steps.push({ i: i, act: "body" }); output.push(i);
+          }
+        } else {
+          var x = 0;
+          while (x < n) {
+            x++;
+            if (isSkip(x, mode)) { steps.push({ i: x, act: "skip" }); continue; }
+            steps.push({ i: x, act: "body" }); output.push(x);
+          }
+        }
+      }
+      return { steps: steps, output: output };
+    }
+
+    function simCode(kind, action, n, target, mode) {
+      if (action === "break") {
+        if (kind === "for") {
+          return "for (int i = 1; i <= " + n + "; i++) {\n" +
+            "    if (i == " + target + ") break;   // 到 " + target + " 就跳出\n" +
+            '    cout << i << " ";\n}';
+        }
+        return "int i = 1;\n" +
+          "while (i <= " + n + ") {\n" +
+          "    if (i == " + target + ") break;   // 到 " + target + " 就跳出\n" +
+          '    cout << i << " ";\n    i++;\n}';
+      }
+      var cond = skipCond(mode);
+      if (kind === "for") {
+        return "for (int i = 1; i <= " + n + "; i++) {\n" +
+          "    if (" + cond + ") continue;   // 跳过这些\n" +
+          '    cout << i << " ";\n}';
+      }
+      return "int i = 0;\n" +
+        "while (i < " + n + ") {\n" +
+        "    i++;                        // 先更新\n" +
+        "    if (" + cond + ") continue;   // 跳过这些\n" +
+        '    cout << i << " ";\n}';
+    }
+
+    function renderChips(containerId, steps, clsFn, labelFn) {
+      var el = lpGet(containerId);
+      el.innerHTML = "";
+      var chips = [];
+      steps.forEach(function (st, k) {
+        var cell = document.createElement("div");
+        cell.className = "cell " + clsFn(st);
+        cell.innerHTML = '<div class="top">' + st.i + '</div><div class="bot">' + (labelFn ? labelFn(st, k) : "") + "</div>";
+        el.appendChild(cell);
+        chips.push(cell);
+      });
+      return chips;
+    }
+
+    function bcSyncFields() {
+      var act = lpGet("bcAct").value;
+      lpGet("bcTargetField").style.display = act === "break" ? "block" : "none";
+      lpGet("bcModeField").style.display = act === "continue" ? "block" : "none";
+    }
+
+    function bcRun() {
+      var kind = lpGet("bcKind").value;
+      var action = lpGet("bcAct").value;
+      var n = parseInt(lpGet("bcN").value, 10);
+      var target = parseInt(lpGet("bcTarget").value, 10);
+      var mode = lpGet("bcMode").value;
+      var msg = lpGet("bcMsg");
+      var result = lpGet("bcResult");
+      var outEl = lpGet("bcOut");
+      if (isNaN(n) || n < 0 || (action === "break" && isNaN(target))) {
+        msg.textContent = "参数要填数字哦"; return;
+      }
+      if (n > 20) { msg.textContent = "n 最大 20 哦"; return; }
+      clearLpTimers();
+      lpGet("bcCode").textContent = simCode(kind, action, n, target, mode);
+      var sim = simulate(kind, action, n, target, mode);
+      var chips = renderChips("bcChips", sim.steps, function (st) {
+        return st.act === "break" ? "stop" : st.act === "skip" ? "skip" : "ok";
+      }, function (st) {
+        return st.act === "break" ? "break!" : st.act === "skip" ? "跳过" : "输出";
+      });
+      outEl.innerHTML = '<span class="muted">--</span>';
+      result.style.display = "block";
+      result.innerHTML = "";
+      msg.textContent = "开始执行…";
+      var t = 0;
+      sim.steps.forEach(function (st, k) {
+        LP_TIMERS.push(setTimeout(function () {
+          chips.forEach(function (x) { x.classList.remove("active"); });
+          chips[k].classList.add("active");
+          if (st.act === "break") {
+            msg.textContent = "i = " + st.i + "，遇到 break，跳出整个循环！";
+            var printed = sim.output.join(" ");
+            outEl.innerHTML = printed.length ? printed : '<span class="muted">（什么都没输出）</span>';
+          } else if (st.act === "skip") {
+            msg.textContent = "i = " + st.i + "，遇到 continue，跳过本次循环体";
+          } else {
+            msg.textContent = "i = " + st.i + "，正常执行 cout << i";
+          }
+        }, t));
+        t += 350;
+      });
+      LP_TIMERS.push(setTimeout(function () {
+        chips.forEach(function (x) { x.classList.remove("active"); });
+        var bIdx = -1;
+        sim.steps.forEach(function (s, k) { if (s.act === "break") bIdx = k; });
+        if (bIdx >= 0) chips[bIdx].classList.add("active");
+        var printed = sim.output.join(" ");
+        outEl.innerHTML = printed.length ? printed : '<span class="muted">（什么都没输出）</span>';
+        result.innerHTML = "输出了 <b>" + (printed.length ? printed : "空") + "</b>";
+        msg.textContent = "执行完毕！" + (action === "break"
+          ? "break 让循环提前结束"
+          : "continue 跳过了一些，其他的照常输出");
+      }, t + 400));
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    var QUIZ_BANK = [
+      { type: "choice", q: "break 遇到以后会怎样？", options: ["跳出整个循环", "只跳过本次循环", "重新开始循环", "让程序结束"], a: 0,
+        explain: "break 让整个循环立刻结束。" },
+      { type: "choice", q: "continue 遇到以后会怎样？", options: ["跳出整个循环", "跳过本次循环剩下的代码", "让 i 自动加 2", "什么也不做"], a: 1,
+        explain: "continue 跳过本次循环体剩余部分，进入下一次循环。" },
+      { type: "choice", q: "for (int i = 1; i <= 5; i++) 里 if (i == 3) break; 循环体一共执行几次？", options: ["2 次", "3 次", "4 次", "5 次"], a: 1,
+        explain: "i = 1、2、3 各执行一次，到 3 就 break，共 3 次。" },
+      { type: "choice", q: "for (int i = 1; i <= 5; i++) 里 if (i == 3) continue; cout << i; 会输出几个数？", options: ["3 个", "4 个", "5 个", "2 个"], a: 1,
+        explain: "输出 1、2、4、5，跳过 3，共 4 个。" },
+      { type: "choice", q: "while 里用 continue 之前必须先做什么？", options: ["更新变量", "跳出循环", "再写一次 while", "没有要求"], a: 0,
+        explain: "先让变量变化（如 i++），否则条件永远不变会死循环。" },
+      { type: "choice", q: "嵌套循环里内层的 break 跳出哪一层？", options: ["所有层", "最近一层", "最外层", "不会跳出"], a: 1,
+        explain: "break 只跳出最靠近它的那一层循环。" },
+      { type: "choice", q: "for 循环里遇到 continue 后，下一步执行循环的哪个部分？", options: ["初始化", "条件判断", "更新部分（如 i++）", "直接结束"], a: 2,
+        explain: "for 里 continue 跳到更新部分，所以 i++ 照常执行。" },
+      { type: "choice", q: "GESP 风格题：一级考纲里，break 和 continue 用在哪种结构中？", options: ["顺序结构", "分支结构", "循环结构", "函数结构"], a: 2,
+        explain: "break / continue 是在循环结构中使用的控制语句。" },
+      { type: "choice", q: "GESP 风格题：要从 1 报到 n，跳过含数字 7 的数，用哪个语句实现跳过最合适？", options: ["break", "continue", "return", "switch"], a: 1,
+        explain: "跳过某个数、继续后面的报数，用 continue；break 会直接结束整个循环。" },
+      { type: "judge", q: "判断：break 执行后，整个循环立刻结束。", a: true,
+        explain: "对，break 跳出整个循环。" },
+      { type: "judge", q: "判断：continue 后面的循环体语句还会继续执行。", a: false,
+        explain: "错，continue 之后的循环体代码直接跳过。" },
+      { type: "judge", q: "判断：while (true) 死循环可以用 break 退出。", a: true,
+        explain: "对，条件永远成立时只有 break 能跳出。" },
+      { type: "judge", q: "判断：判断质数时，找到因子就可以 break，不必再试。", a: true,
+        explain: "对，找到因子说明不是质数，直接停更省时间。" },
+      { type: "judge", q: "判断：同一个循环里不能同时出现 break 和 continue。", a: false,
+        explain: "错，两者可以出现在同一个循环里，各自处理不同情况。" }
+    ];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！break 和 continue 难不倒你！" :
+          right >= 6 ? "不错！再复习一下就能全对～" :
+          right >= 4 ? "还行，把「break 退出、continue 跳过」再看一遍吧！" :
+          "别灰心，重点看第 1 节的对比表和可视化器。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      lpGet("bcRun").addEventListener("click", bcRun);
+      lpGet("bcAct").addEventListener("change", bcSyncFields);
+      bcSyncFields();
+      initTabs();
+      initQuiz();
+    });
+  </script>
+</body>
+</html>

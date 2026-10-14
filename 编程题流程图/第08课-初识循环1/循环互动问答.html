@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>初识循环1 · 课堂练习 · 互动问答</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#eaf1ff,#e9edf6 45%,#f5f1fb);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:#17233b;padding:22px}
+.wrap{max-width:920px;margin:0 auto}
+h1{font-size:23px;text-align:center;margin:0 0 4px}
+.sub{text-align:center;color:#64748b;font-size:13.5px;margin:0 0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.tab{cursor:pointer;border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px}
+.tab.on{background:linear-gradient(135deg,#3b6fd4,#7c3aed);color:#fff;border-color:transparent}
+.card{background:#fff;border:1px solid #e2e8f3;border-radius:16px;padding:18px 20px;box-shadow:0 10px 30px rgba(30,52,96,.09)}
+.stem{background:#f8fafc;border-left:4px solid #60a5fa;border-radius:8px;padding:10px 14px;font-size:15px;line-height:1.7}
+.stem .t{color:#94a3b8;font-size:12px;display:block;margin-bottom:2px}
+.params{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 2px;min-height:6px}
+.pv{display:flex;align-items:center;gap:8px;font-size:14px}
+.pv input[type=range]{width:160px}
+.pv b{color:#4f46e5;min-width:30px;display:inline-block;text-align:center}
+.tip{color:#94a3b8;font-size:12.5px;margin:2px 0 10px}
+.qa{margin-top:10px}
+.qa .item{border:1px solid #e2e8f3;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.qa .q{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:#f8fafc;font-size:14.5px;line-height:1.6}
+.qa .q .n{flex:0 0 24px;height:24px;border-radius:50%;background:#e0e7ff;color:#4338ca;font-size:13px;font-weight:700;display:grid;place-items:center}
+.qa .q .who{color:#94a3b8;font-size:12px;margin-left:auto;white-space:nowrap}
+.qa .a{padding:0 14px;max-height:0;overflow:hidden;transition:max-height .28s ease,padding .28s ease;background:#fff}
+.qa .item.open .a{max-height:900px;padding:12px 14px}
+.qa .a .inner{color:#334155;font-size:14px;line-height:1.75}
+.qa .a .inner b{color:#1d4ed8}
+.seq{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tok{background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:2px 9px;font-family:Consolas,monospace;font-size:14px}
+.tok.hot{background:#fef3c7;border-color:#f59e0b}
+.code{background:#0f172a;color:#e2e8f0;border-radius:10px;padding:12px 16px;font-family:Consolas,monospace;font-size:13.5px;line-height:1.75;overflow:auto;white-space:pre;margin-top:6px}
+.code .init{color:#fda4af;font-weight:700}.code .cond{color:#fcd34d;font-weight:700}.code .upd{color:#86efac;font-weight:700}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+button{cursor:pointer;border:none;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#3b6fd4,#7c3aed)}
+button.ghost{background:#eef2ff;color:#3730a3}
+button:disabled{opacity:.45;cursor:default}
+.note{color:#94a3b8;font-size:12.5px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>初识循环1 · 课堂练习 · 互动问答</h1>
+  <p class="sub">老师问 → 学生答 → 点「揭晓」对答案（每题 4~5 问）</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="card">
+    <div class="stem" id="stem"></div>
+    <div class="params" id="params"></div>
+    <div class="tip" id="tip"></div>
+    <div class="ctrl">
+      <button id="all">👁 揭晓全部</button>
+      <button id="none" class="ghost">收起全部</button>
+      <span class="note">先让学生说出来，再揭晓对照～</span>
+    </div>
+    <div class="qa" id="qa"></div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+var PROBS=[
+ {title:"我爱学习", stem:"请输出 5 行「我爱学习」。", inputs:[],
+  s:function(){return 1;}, e:function(){return 5;}, st:function(){return 1;},
+  round:"输出一行「我爱学习」", codeHead:"for (int i = 1; i <= 5; i++)", codeBody:'cout << "我爱学习" << endl;', noInput:"（这题不用输入参数，循环次数是固定的。）"},
+ {title:"一百五", stem:"请输出 1~150 的所有数字，每个数字之间用空格隔开。", inputs:[],
+  s:function(){return 1;}, e:function(){return 150;}, st:function(){return 1;},
+  round:"输出当前数字 i，后面跟一个空格", codeHead:"for (int i = 1; i <= 150; i++)", codeBody:'cout << i << " ";', noInput:"（这题不用输入参数，范围是固定的。）"},
+ {title:"再来一百五", stem:"请输出 150~300 的所有数字，每个数字之间用空格隔开。", inputs:[],
+  s:function(){return 150;}, e:function(){return 300;}, st:function(){return 1;},
+  round:"输出当前数字 i", codeHead:"for (int i = 150; i <= 300; i++)", codeBody:'cout << i << " ";', noInput:"（这题不用输入参数。）"},
+ {title:"百五一", stem:"请输出从 150 倒数到 1 的所有数字，每个数字之间用空格隔开。", inputs:[],
+  s:function(){return 150;}, e:function(){return 1;}, st:function(){return -1;},
+  round:"输出当前数字 i", codeHead:"for (int i = 150; i >= 1; i--)", codeBody:'cout << i << " ";', noInput:"⚠ 注意这题是要倒着数的。"},
+ {title:"n个数", stem:"输入一个正整数 n，请输出 1~n 的所有数字，每个数字之间用空格隔开。", inputs:[{k:"n",def:6,min:1,max:60}],
+  s:function(v){return 1;}, e:function(v){return v.n;}, st:function(){return 1;},
+  round:"输出当前数字 i", codeHead:"for (int i = 1; i <= n; i++)", codeBody:'cout << i << " ";', noInput:"把终点从固定的数换成输入 n。"},
+ {title:"再来n个数", stem:"输入一个正整数 n，请输出从数字 n 倒数到 1 的所有数字，每个数字之间用空格隔开。", inputs:[{k:"n",def:6,min:1,max:60}],
+  s:function(v){return v.n;}, e:function(){return 1;}, st:function(){return -1;},
+  round:"输出当前数字 i", codeHead:"for (int i = n; i >= 1; i--)", codeBody:'cout << i << " ";', noInput:"倒着输出，起点是 n。"},
+ {title:"五十", stem:"输入一个正整数 n，请输出 n~50 的所有数字，每个数字之间用空格隔开。", inputs:[{k:"n",def:10,min:1,max:60}],
+  s:function(v){return v.n;}, e:function(){return 50;}, st:function(){return 1;},
+  round:"输出当前数字 i", codeHead:"for (int i = n; i <= 50; i++)", codeBody:'cout << i << " ";', noInput:"起点是 n、终点固定 50。把 n 拖到 50 以上试试看。"},
+ {title:"累加", stem:"输入两个正整数 x, y，请输出 x~y 之间所有奇数的总和。", inputs:[{k:"x",def:1,min:1,max:30},{k:"y",def:10,min:1,max:30}], mode:"sumOdd",
+  s:function(v){return v.x;}, e:function(v){return v.y;}, st:function(){return 1;},
+  round:"如果 i 是奇数，就把它加进 sum（偶数跳过）", codeHead:"for (int i = x; i <= y; i++)", codeBody:"if (i % 2 != 0) sum += i;", noInput:"先定义 sum=0，循环结束后输出 sum。"}
+];
+
+var tabs=document.getElementById("tabs"),stemEl=document.getElementById("stem"),paramsEl=document.getElementById("params"),
+    tipEl=document.getElementById("tip"),qaEl=document.getElementById("qa");
+var cur=0;
+
+function vals(){var v={},p=PROBS[cur];(p.inputs||[]).forEach(function(i){v[i.k]=i.cur!==undefined?i.cur:i.def;});return v;}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function colorHead(h){var m=h.match(/^(for\s*\(\s*)(int\s+i\s*=\s*[^;]+)(;)([^;]+)(;)([^)]+)(\).*)$/);
+  if(!m)return esc(h);
+  return esc(m[1])+'<span class="init">'+esc(m[2])+'</span>'+esc(m[3])+'<span class="cond">'+esc(m[4])+'</span>'+esc(m[5])+'<span class="upd">'+esc(m[6])+'</span>'+esc(m[7]);}
+function seqArr(p){var v=vals(),s=p.s(v),e=p.e(v),st=p.st(v),out=[],i;var guard=0;
+  if(st>0){for(i=s;i<=e&&guard<3000;i+=st,guard++)out.push(i);}else{for(i=s;i>=e&&guard<3000;i+=st,guard++)out.push(i);}return out;}
+function seqHTML(arr,cap){cap=cap||40;var h='<div class="seq">';var n=Math.min(arr.length,cap);
+  for(var i=0;i<n;i++)h+='<span class="tok">'+arr[i]+'</span>';
+  if(arr.length>cap)h+='<span class="tok">…（还有 '+(arr.length-cap)+' 个）</span>';
+  return h+'</div>';}
+
+function buildQA(){
+  var p=PROBS[cur],v=vals(),arr=seqArr(p),cnt=arr.length;
+  var iS=p.s(v),iE=p.e(v),iSt=p.st(v);
+  var dir = iSt>0?"每次 +1（从小到大）":"每次 -1（从大到小）";
+  var items=[];
+  items.push({q:"这题一共要循环几次？",a:"循环 <b>"+cnt+"</b> 次。"+(cnt===0?"（注意：起点比终点大，一次都不跑！）":"")});
+  items.push({q:"for 的三要素分别是什么？（i 从几开始、什么条件继续、每轮怎么变）",
+    a:"① 开始：<b>i = "+iS+"</b>；② 条件：<b>i "+(iSt>0?"<=":">=")+" "+iE+"</b> 就继续；③ 变化：<b>"+dir+"</b>。<div class='code'>"+colorHead(p.codeHead)+" {\n    "+esc(p.codeBody)+"\n}</div>"});
+  items.push({q:"每一轮循环体里做什么？",a:esc(p.round)+"。"});
+  if(p.mode==="sumOdd"){
+    var odds=arr.filter(function(x){return x%2!==0;});
+    var sum=odds.reduce(function(a,b){return a+b;},0);
+    items.push({q:"哪些 i 会被加进 sum？（奇数是哪些）",a:"从 "+iS+" 到 "+iE+" 里的奇数："+seqHTML(odds,30)});
+    items.push({q:"那最后 sum 等于多少？",a:"sum = <b>"+sum+"</b>。"});
+  }else{
+    var shown = (p.title==="我爱学习") ? [1,2,3,4,5] : arr;
+    items.push({q:"那最终屏幕上输出的结果是什么？",
+      a:(p.title==="我爱学习")?"<b>5 行</b>「我爱学习」":seqHTML(shown,40)});
+    if(p.title==="百五一") items.push({q:"如果改成输出 1~150（正着数），for 的头要改哪几个地方？",
+      a:"把 <b>i = 150 改成 i = 1</b>、<b>i >= 1 改成 i <= 150</b>、<b>i-- 改成 i++</b>。"});
+    if(p.title==="五十") items.push({q:"如果输入的 n 比 50 还大，会发生什么？为什么？",
+      a:"循环体<b>一次都不会执行</b>——因为条件 <b>i <= 50</b> 一开始就不成立（n>50）。"});
+    if(p.title==="再来n个数") items.push({q:"这题和上一题「n个数」比，for 的头改了什么？",
+      a:"起点从 <b>1</b> 变成 <b>n</b>、终点从 <b>n</b> 变成 <b>1</b>、变化从 <b>i++</b> 变成 <b>i--</b>（方向反了）。"});
+  }
+  qaEl.innerHTML="";
+  items.forEach(function(it,idx){
+    var d=document.createElement("div"); d.className="item";
+    d.innerHTML='<div class="q"><span class="n">'+(idx+1)+'</span><span>'+it.q+'</span><span class="who">问学生</span></div>'+
+                '<div class="a"><div class="inner">'+it.a+'</div></div>';
+    d.querySelector(".q").onclick=function(){ d.classList.toggle("open"); };
+    qaEl.appendChild(d);
+  });
+}
+function renderParams(){
+  var p=PROBS[cur]; paramsEl.innerHTML="";
+  if(!p.inputs||!p.inputs.length){ paramsEl.innerHTML=""; return; }
+  p.inputs.forEach(function(inp){
+    if(inp.cur===undefined)inp.cur=inp.def;
+    var w=document.createElement("label"); w.className="pv"; w.innerHTML=inp.k+" = <b>"+inp.cur+"</b>";
+    var r=document.createElement("input"); r.type="range"; r.min=inp.min; r.max=inp.max; r.value=inp.cur;
+    r.oninput=function(){ inp.cur=parseInt(r.value,10); w.querySelector("b").textContent=inp.cur; buildQA(); };
+    w.appendChild(r); paramsEl.appendChild(w);
+  });
+}
+function renderTabs(){ tabs.innerHTML=""; PROBS.forEach(function(p,i){
+  var b=document.createElement("button"); b.className="tab"+(i===cur?" on":""); b.textContent=p.title;
+  b.onclick=function(){cur=i;setup();}; tabs.appendChild(b);}); }
+function setup(){ renderTabs(); renderParams();
+  stemEl.innerHTML='<span class="t">题目</span>'+esc(PROBS[cur].stem);
+  tipEl.textContent=PROBS[cur].noInput||""; buildQA(); }
+document.getElementById("all").onclick=function(){document.querySelectorAll("#qa .item").forEach(function(e){e.classList.add("open");});};
+document.getElementById("none").onclick=function(){document.querySelectorAll("#qa .item").forEach(function(e){e.classList.remove("open");});};
+setup();
+})();
+</script>
+</body>
+</html>

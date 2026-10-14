@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第16课 字符数组和字符串 - 信奥C++星辰班</title>
+  <style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 15px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+    /* ===== 本课新增：字符格子 ===== */
+    .cell-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cell {
+      min-width: 56px; height: 64px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: "Consolas", monospace; transition: all 0.2s ease; padding: 0 4px;
+    }
+    .cell .v { font-size: 18px; font-weight: 700; }
+    .cell .ix { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .cell .as { font-size: 10px; color: var(--accent-3); }
+    .cell.null { border-color: rgba(255,107,157,0.6); background: rgba(255,107,157,0.1); }
+    .cell.null .v { color: var(--accent-2); }
+    .cell.string { border-color: rgba(126,231,135,0.5); background: rgba(126,231,135,0.08); }
+    .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .stat-chip {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px 14px; font-size: 14px;
+    }
+    .stat-chip b { font-family: "Consolas", monospace; color: var(--accent-3); }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>第16课 · 字符数组和字符串</h1>
+      <p class="subtitle">字符变量、字符数组、'\0' 结束标志、string 类型</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 一、字符变量 -->
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>字符变量 char</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">存放单个字符</div>
+          <p><code>char</code> 用来存一个字符，用<b>单引号</b>括起来，比如 <code>'A'</code>、<code>'b'</code>、<code>'7'</code>。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">本质是 ASCII 码</div>
+          <p>char 里存的其实是这个字符对应的整数（ASCII 码）。比如 <code>'A'</code> 存的是 65，<code>'a'</code> 是 97。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">能和整数互转</div>
+          <p>因为本质是整数，所以 <code>char</code> 和 <code>int</code> 之间可以相互转换，比较大小也是比 ASCII 码。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔤</span>字符和它的 ASCII 码</div>
+        <div class="anno">
+<pre><span class="k">char</span> c = <span class="s">'A'</span>;
+cout &lt;&lt; c &lt;&lt; endl;          <span class="cm">// 输出字符 A</span>
+cout &lt;&lt; (<span class="k">int</span>)c &lt;&lt; endl;   <span class="cm">// 输出 65（A 的 ASCII 码）</span>
+
+<span class="k">char</span> d = <span class="s">'A'</span> + <span class="s">1</span>;       <span class="cm">// 65 + 1 = 66，对应 'B'</span>
+cout &lt;&lt; d &lt;&lt; endl;          <span class="cm">// 输出 B</span></pre>
+        </div>
+        <p class="mem-note">💡 记住几个常见的：空格 <code>32</code>、<code>'0'</code> 是 <code>48</code>、<code>'A'</code> 是 <code>65</code>、<code>'a'</code> 是 <code>97</code>。</p>
+      </div>
+    </section>
+
+    <!-- 二、字符数组与 '\0' -->
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>字符数组和 '\0' 结束标志</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">一串字符存进数组</div>
+          <p><code>char s[100];</code> 能放 100 个字符，定义方式和普通数组一样，用下标访问每个字符。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">末尾要有 '\0'</div>
+          <p>字符串末尾必须有一个 <code>'\0'</code>（空字符）作为结束标志，系统靠它判断字符串到哪里结束。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">长度要多留 1 格</div>
+          <p>存 n 个字符的字符串，数组长度至少要 <code>n+1</code>，因为要留一个位置给 <code>'\0'</code>。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">📦</span>两种初始化方式</div>
+        <div class="anno">
+<pre><span class="cm">// 方式一：逐个字符赋值，系统不一定自动加 '\0'</span>
+<span class="k">char</span> a[<span class="s">10</span>] = {<span class="s">'h'</span>, <span class="s">'e'</span>, <span class="s">'l'</span>, <span class="s">'l'</span>, <span class="s">'o'</span>};
+
+<span class="cm">// 方式二：用字符串常量赋值，系统自动在末尾补 '\0'</span>
+<span class="k">char</span> b[<span class="s">10</span>] = <span class="s">"hello"</span>;   <span class="cm">// 末尾自动加 '\0'，一共占 6 格</span></pre>
+        </div>
+        <p class="mem-note">⚠ <b>易错</b>：如果忘了给 <code>'\0'</code> 留位置，或者覆盖了它，输出时就会接着往后面读，出现乱码。</p>
+      </div>
+    </section>
+
+    <!-- 三、string -->
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>更方便的 string 类型</h2>
+      <div class="nest-grid">
+        <div class="nest-card c1">
+          <div class="n-name">不用先定长度</div>
+          <p><code>string s;</code> 直接就能用，不用像字符数组那样提前写死长度，长度会自己适应。</p>
+        </div>
+        <div class="nest-card c2">
+          <div class="n-name">用 + 拼接、.length() 取长</div>
+          <p><code>string c = a + b;</code> 用加号拼接；<code>s.length()</code> 得到字符个数（不含 <code>'\0'</code>）。</p>
+        </div>
+        <div class="nest-card c3">
+          <div class="n-name">用下标取字符</div>
+          <p><code>s[i]</code> 取出第 i 个字符，和字符数组一样从下标 0 开始，cin 输入也直接支持。</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🧵</span>string 的基本用法</div>
+        <div class="anno">
+<pre><span class="k">#include</span> &lt;string&gt;
+<span class="k">string</span> s = <span class="s">"hello"</span>;
+cout &lt;&lt; s.length() &lt;&lt; endl;   <span class="cm">// 5</span>
+cout &lt;&lt; s[<span class="s">1</span>] &lt;&lt; endl;         <span class="cm">// e（下标从 0 开始）</span>
+
+<span class="k">string</span> a = <span class="s">"信奥"</span>, b = <span class="s">"C++"</span>;
+cout &lt;&lt; a + b &lt;&lt; endl;        <span class="cm">// 信奥C++</span></pre>
+        </div>
+        <p class="mem-note">💡 string 和字符数组是<b>不同的类型</b>，用法相似但不能随便混用，转换要留意。</p>
+      </div>
+    </section>
+
+    <!-- 四、可视化器 -->
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>可视化器：字符串在内存里长什么样</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔬</span>输入字符串，看每个格子的字符、ASCII 码和 '\0'</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field">
+              <label>输入一个字符串（不含空格）</label>
+              <input id="l16str" value="Hello">
+            </div>
+            <div class="field">
+              <label>展示视角</label>
+              <select id="l16mode">
+                <option value="arr">字符数组（带 '\0'）</option>
+                <option value="str">string 类型（无 '\0'）</option>
+              </select>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="l16run">▶ 分析</button>
+            </div>
+            <div class="conv-msg" id="l16msg">输入字符串，点「分析」查看内存布局…</div>
+            <div class="sim-arr-label" style="margin-top: 6px;">对应代码</div>
+            <div class="lp-code"><pre id="l16code">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label" id="l16label">字符数组布局</div>
+            <div class="cell-row" id="l16cells"></div>
+            <div class="stat-row" id="l16stats"></div>
+            <div class="step-final" id="l16res" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 五、代码 -->
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="char">字符与ASCII</div>
+          <div class="code-tab" data-tab="init">字符数组初始化</div>
+          <div class="code-tab" data-tab="io">输入输出</div>
+          <div class="code-tab" data-tab="str">string 用法</div>
+          <div class="code-tab" data-tab="trap">易错对比</div>
+        </div>
+
+        <div class="code-content active" id="tab-char">
+          <div class="code-block">
+<pre><span class="comment">// 字符变量和它的 ASCII 码</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">char</span> c = <span class="string">'A'</span>;
+    cout &lt;&lt; c &lt;&lt; endl;              <span class="comment">// A</span>
+    cout &lt;&lt; (<span class="type">int</span>)c &lt;&lt; endl;       <span class="comment">// 65</span>
+    cout &lt;&lt; (<span class="type">char</span>)(c + <span class="number">1</span>) &lt;&lt; endl; <span class="comment">// B</span>
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-init">
+          <div class="code-block">
+<pre><span class="comment">// 字符数组的两种初始化</span>
+<span class="type">char</span> a[<span class="number">10</span>] = {<span class="string">'h'</span>, <span class="string">'e'</span>, <span class="string">'l'</span>, <span class="string">'l'</span>, <span class="string">'o'</span>};  <span class="comment">// 逐个字符</span>
+<span class="type">char</span> b[<span class="number">10</span>] = <span class="string">"hello"</span>;                  <span class="comment">// 字符串常量，自动补 '\0'</span>
+
+<span class="comment">// b 在内存里：h e l l o \0</span>
+<span class="comment">// 存 5 个字符，数组长度至少要 6</span></pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-io">
+          <div class="code-block">
+<pre><span class="comment">// 字符数组的输入与输出</span>
+<span class="type">char</span> s[<span class="number">100</span>];
+cin &gt;&gt; s;              <span class="comment">// 遇到空格或换行就停止；数组名不写 &amp;</span>
+cout &lt;&lt; s &lt;&lt; endl;     <span class="comment">// 输出整个字符串</span>
+
+<span class="comment">// 想读一整行（含空格）可以用 getline</span>
+<span class="keyword">#include</span> <span class="string">&lt;string&gt;</span>
+<span class="type">string</span> line;
+getline(cin, line);    <span class="comment">// 读一整行，不含换行符</span>
+cout &lt;&lt; line &lt;&lt; endl;</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-str">
+          <div class="code-block">
+<pre><span class="comment">// string 的常见操作</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;string&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">string</span> s = <span class="string">"hello"</span>;
+    cout &lt;&lt; s.length() &lt;&lt; endl;  <span class="comment">// 5</span>
+    cout &lt;&lt; s[<span class="number">1</span>] &lt;&lt; endl;        <span class="comment">// e</span>
+
+    <span class="type">string</span> t = <span class="string">"CS"</span>;
+    cout &lt;&lt; t + <span class="string">"-plus"</span> &lt;&lt; endl; <span class="comment">// CS-plus，用 + 拼接</span>
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-content" id="tab-trap">
+          <div class="code-block">
+<pre><span class="comment">// ❌ 错误 1：数组开小了，没给 '\0' 留位置</span>
+<span class="type">char</span> s[<span class="number">5</span>] = <span class="string">"hello"</span>;   <span class="comment">// 实际需要 6 格（含 '\0'）</span>
+
+<span class="comment">// ❌ 错误 2：单个字符用了双引号</span>
+<span class="type">char</span> c = <span class="string">"A"</span>;            <span class="comment">// 双引号是字符串，应该用 'A'</span>
+
+<span class="comment">// ❌ 错误 3：cin 读数组名多写了 &amp;</span>
+cin &gt;&gt; &amp;s;              <span class="comment">// 数组名本身就是地址，不用 &amp;</span>
+
+<span class="comment">// ✅ 正确</span>
+<span class="type">char</span> s[<span class="number">10</span>] = <span class="string">"hello"</span>;
+<span class="type">char</span> c = <span class="string">'A'</span>;
+cin &gt;&gt; s;</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 六、小测验 -->
+    <section>
+      <h2 class="section-title"><span class="badge">6</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 七、小贴士 -->
+    <div class="tips-section">
+      <h3>💡 小贴士</h3>
+      <ul>
+        <li><strong>单引号 vs 双引号</strong>：单个字符用 <code>'A'</code>，字符串用 <code>"ABC"</code>。</li>
+        <li><strong>字符串末尾有 '\0'</strong>：它是结束标志，不显示出来，但要占一格。</li>
+        <li><strong>长度多留 1</strong>：存 n 个字符，数组长度至少 <code>n+1</code>。</li>
+        <li><strong>cin 读字符串不加 &amp;</strong>：写成 <code>cin &gt;&gt; s;</code>，数组名本身就是地址。</li>
+        <li><strong>cin 遇空格停</strong>：要读带空格的一整行，用 <code>getline(cin, s);</code>。</li>
+        <li><strong>string 更省心</strong>：不用定长度，用 <code>.length()</code> 取长度、<code>+</code> 拼接。</li>
+        <li><strong>char 本质是整数</strong>：<code>(int)'A'</code> 是 65，能参与大小比较。</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer class="page-footer">
+    <div class="container">
+      <p>信奥 C++ 星辰班 · 第16课 字符数组和字符串</p>
+    </div>
+  </footer>
+
+  <script>
+    if (typeof history !== "undefined" && "scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    /* ================= 可视化器：字符串内存布局 ================= */
+    function l16Render() {
+      var s = document.getElementById("l16str").value;
+      var mode = document.getElementById("l16mode").value;
+      var chars = s.split("");
+      var box = document.getElementById("l16cells");
+      var label = document.getElementById("l16label");
+      box.innerHTML = "";
+      label.textContent = mode === "arr" ? "字符数组布局（含 '\\0' 结束标志）" : "string 类型布局（不含 '\\0'）";
+
+      chars.forEach(function (ch, k) {
+        var d = document.createElement("div");
+        d.className = "cell" + (mode === "str" ? " string" : "");
+        d.innerHTML = '<span class="v">' + (ch === "<" ? "&lt;" : ch === ">" ? "&gt;" : ch) +
+          '</span><span class="ix">' + k + '</span><span class="as">' + ch.charCodeAt(0) + "</span>";
+        box.appendChild(d);
+      });
+
+      if (mode === "arr") {
+        var z = document.createElement("div");
+        z.className = "cell null";
+        z.innerHTML = '<span class="v">\\0</span><span class="ix">' + chars.length + '</span><span class="as">0</span>';
+        box.appendChild(z);
+      }
+
+      var stats = document.getElementById("l16stats");
+      stats.innerHTML =
+        '<div class="stat-chip">字符个数 <b>' + chars.length + "</b></div>" +
+        '<div class="stat-chip">下标范围 <b>' + (chars.length ? "0 ~ " + (chars.length - 1) : "无") + "</b></div>" +
+        '<div class="stat-chip">数组至少需要 <b>' + (chars.length + 1) + "</b> 格（含 '\\0'）</div>";
+      document.getElementById("l16res").style.display = "block";
+      document.getElementById("l16res").innerHTML = mode === "arr"
+        ? "字符数组：最后一个格子是 <b>'\\0'</b>，长度要开 <b>" + (chars.length + 1) + "</b> 才够。"
+        : "string：只存 <b>" + chars.length + "</b> 个字符，<code>s.length()</code> 返回 <b>" + chars.length + "</b>。";
+
+      var code = mode === "arr"
+        ? 'char s[' + (chars.length + 1) + '] = "' + s + '";\n' +
+          '// 内存：' + chars.map(function (c) { return c; }).join(" ") + ' \\0\n' +
+          'int len = ' + chars.length + ';'
+        : 'string s = "' + s + '";\n' +
+          'cout << s.length() << endl;  // ' + chars.length + '\n' +
+          'cout << s[0] << endl;         // ' + (chars.length ? chars[0] : "") + ' (下标从 0 开始)';
+      document.getElementById("l16code").textContent = code;
+      document.getElementById("l16msg").textContent =
+        mode === "arr" ? "字符数组靠末尾的 '\\0' 判断结束 ✅" : "string 自动管理长度，不用自己写 '\\0' ✅";
+    }
+
+    /* ================= 代码标签 ================= */
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    /* ================= 小测验 ================= */
+    var QUIZ_BANK = [
+      { type: "choice", q: "定义一个字符变量并存入字符 A，正确写法是？", options: ["char c = \"A\";", "char c = 'A';", "int c = 'A';", "char c = A;"], a: 1,
+        explain: "单个字符要用单引号，类型是 char，所以是 char c = 'A';。" },
+      { type: "choice", q: "C++ 中字符串的结束标志是哪个？", options: ["'\\n'", "'\\0'", "'\\t'", "'.'"], a: 1,
+        explain: "字符串末尾用空字符 '\\0' 作为结束标志。" },
+      { type: "choice", q: "char s[10] = \"hello\"; 这一串字符加上结束标志一共占几格？", options: ["5", "6", "10", "11"], a: 1,
+        explain: "hello 是 5 个字符，末尾还有 1 个 '\\0'，一共 6 格。" },
+      { type: "choice", q: "字符 'A' 的 ASCII 码是？", options: ["48", "65", "97", "32"], a: 1,
+        explain: "'A' 是 65，'a' 是 97，'0' 是 48，空格是 32。" },
+      { type: "choice", q: "cin >> s; 读取字符串时，遇到什么会停止？", options: ["逗号", "空格或换行", "字母", "只读到 5 个字符"], a: 1,
+        explain: "cin 默认遇到空格或换行就停止读取。" },
+      { type: "choice", q: "string 类型获取长度用哪个？", options: ["s.len", "s.length()", "length(s)", "s[0]"], a: 1,
+        explain: "string 用 s.length() 取字符个数（也有 s.size()）。" },
+      { type: "choice", q: "下面哪种写法会让字符串末尾自动补上 '\\0'？", options: ["char s[10] = \"hi\";", "char s[10] = {'h','i'};", "char s[2] = {'h','i'};", "char s;"], a: 0,
+        explain: "用字符串常量赋值（双引号）时，系统会自动在末尾补 '\\0'。" },
+      { type: "choice", q: "（GESP 风格题）字符 'a' 的 ASCII 码值是？", options: ["65", "97", "48", "122"], a: 1,
+        explain: "小写字母 'a' 的 ASCII 码是 97，'A' 是 65。" },
+      { type: "choice", q: "（GESP 风格题）char 类型和 int 类型之间是什么关系？", options: ["完全不能转换", "char 本质是整数，可以相互转换", "只有 char 能转 int", "必须用字符串才能转换"], a: 1,
+        explain: "char 存的是字符的 ASCII 码整数，所以 char 和 int 可以相互转换。" },
+      { type: "judge", q: "判断：字符串常量要写在双引号里，单个字符写单引号里。", a: true,
+        explain: "对，\"ABC\" 是字符串，'A' 是单个字符。" },
+      { type: "judge", q: "判断：char s[] = {'h','e'}; 系统一定会自动加上 '\\0'。", a: false,
+        explain: "错，逐个字符赋值且没写满时不一定补 '\\0'，用字符串常量赋值才会自动补。" },
+      { type: "judge", q: "判断：string 类型需要提前指定长度才能用。", a: false,
+        explain: "错，string 不用提前定长度，长度会自己适应。" },
+      { type: "judge", q: "判断：'\\0' 也会占用一个存储位置。", a: true,
+        explain: "对，所以存 n 个字符的字符串，数组长度至少要 n+1。" },
+      { type: "judge", q: "判断：cin >> s; 中数组名 s 前面不需要写 &。", a: true,
+        explain: "对，数组名本身就代表地址，不需要取地址符 &。" },
+      { type: "judge", q: "判断：string 类型可以用 + 把两个字符串拼接起来。", a: true,
+        explain: "对，string 支持用 + 拼接，比字符数组方便。" }
+    ];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！字符数组和字符串掌握得很牢！" :
+          right >= 6 ? "不错！再把 '\\0' 和单双引号复习一下就更棒。" :
+          right >= 4 ? "还行，重点看第 2 节的 '\\0' 和第 4 节的可视化器。" :
+          "别灰心，先记住：单字符单引号、字符串双引号、末尾有 '\\0'。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("l16run").addEventListener("click", l16Render);
+      document.getElementById("l16str").addEventListener("input", l16Render);
+      document.getElementById("l16mode").addEventListener("change", l16Render);
+      initTabs();
+      initQuiz();
+      l16Render();
+    });
+  </script>
+</body>
+</html>
