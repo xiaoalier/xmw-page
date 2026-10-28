@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第57课 · 埃氏筛法</title>
+<style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 16px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>第57课 · 埃氏筛法</h1>
+      <p class="subtitle">一次性筛出 n 以内的所有质数</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>为什么不能一个个判断</h2>
+<div class="nest-grid"><div class="nest-card c1"><div class="n-name">逐个判断太慢</div><p>每个数试除到平方根，n = 1e6 时总运算量很大。</p></div><div class="nest-card c2"><div class="n-name">筛法的想法</div><p>把 2 的倍数、3 的倍数、5 的倍数…全部划掉，剩下的就是质数。</p></div><div class="nest-card c3"><div class="n-name">复杂度</div><p>O(n log log n)，n = 1e6 也很快。</p></div></div><div class="panel"><div class="panel-title"><span class="icon">📌</span>写法</div><div class="anno"><pre>bool isPrime[1000005];
+for (int i = 2; i &lt;= n; i++) isPrime[i] = true;
+
+for (int i = 2; i * i &lt;= n; i++)
+    if (isPrime[i])
+        for (int j = i * i; j &lt;= n; j += i)
+            isPrime[j] = false;      // 划掉 i 的倍数</pre></div><p class="mem-note">⚠ 内层从 <b>i*i</b> 开始（比 i*i 小的倍数已经被更小的质数划掉了）；⚠ 判断条件用 i*i <= n。</p></div>
+    </section>
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>筛法的常见变形</h2>
+<div class="panel"><div class="panel-title"><span class="icon">📌</span>还能顺便统计</div><div class="anno"><pre>// 统计质数个数
+int cnt = 0;
+for (int i = 2; i &lt;= n; i++) if (isPrime[i]) cnt++;
+
+// 线性筛（欧拉筛）：每个合数只被最小质因子划一次，O(n)</pre></div></div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>埃氏筛法演示</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔧</span>输入 n，看每次划掉了哪些数</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field"><label>n（2~120）</label><input id="n" value="50"></div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="vRun">▶ 运行</button>
+            </div>
+            <div class="conv-msg" id="vMsg">点「运行」，看筛的过程…</div>
+            <div class="sim-arr-label" style="margin-top:6px;">对应代码</div>
+            <div class="lp-code"><pre id="vCode">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">筛的过程与结果</div>
+            <div class="console" id="vOut"><span class="muted">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs"><div class="code-tab active" data-tab="t0">埃氏筛</div><div class="code-tab" data-tab="t1">统计质数</div><div class="code-tab" data-tab="t2">线性筛（了解）</div><div class="code-tab" data-tab="t3">易错提醒</div></div>
+<div class="code-content active" id="tab-t0"><div class="code-block"><pre><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++) isPrime[i] = true;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i * i &lt;= n; i++)
+    <span class="keyword">if</span> (isPrime[i])
+        <span class="keyword">for</span> (<span class="type">int</span> j = i * i; j &lt;= n; j += i)
+            isPrime[j] = false;</pre></div></div><div class="code-content" id="tab-t1"><div class="code-block"><pre><span class="type">int</span> cnt = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++)
+    <span class="keyword">if</span> (isPrime[i]) cnt++;</pre></div></div><div class="code-content" id="tab-t2"><div class="code-block"><pre><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++) {
+    <span class="keyword">if</span> (!vis[i]) prime[++tot] = i;
+    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt;= tot &amp;&amp; i * prime[j] &lt;= n; j++) {
+        vis[i * prime[j]] = <span class="number">1</span>;
+        <span class="keyword">if</span> (i % prime[j] == <span class="number">0</span>) <span class="keyword">break</span>;
+    }
+}</pre></div></div><div class="code-content" id="tab-t3"><div class="code-block"><pre><span class=<span class="string">"comment"</span>>// ⚠ 内层从 i*i 开始，不是从 i 开始</span>
+<span class=<span class="string">"comment"</span>>// ⚠ 外层条件是 i*i &lt;= n</span>
+<span class=<span class="string">"comment"</span>>// ⚠ 数组要开到 n+<span class="number">1</span></span></pre></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">6</span>小贴士</h2>
+      <div class="panel tips-section">
+        <h3>💡 小贴士</h3>
+        <ul>
+          <li>筛法前把数组全部设为 true，再把 0、1 设为 false。</li>
+          <li>内层从 i*i 开始，能省不少时间。</li>
+          <li>外层条件用 i*i <= n。</li>
+          <li>数组开 n+1，注意下标别越界。</li>
+          <li>只要求 n 以内质数时，筛法比逐个判断快得多。</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer><div class="container">信奥 C++ 星辰班 · 第57课 埃氏筛法</div></footer>
+
+<script>
+
+    var QUIZ_BANK = [{ type: "choice", q: "埃氏筛法的基本想法是？", options: ["把每个质数的倍数都划掉，剩下的就是质数", "逐个试除", "随机判断", "递归判断"], a: 0, explain: "划掉合数，剩下质数。" },
+      { type: "choice", q: "筛法内层循环为什么要从 i*i 开始？", options: ["更小的倍数已经被更小的质数划掉了", "为了更快结束", "没什么原因", "防止数组越界"], a: 0, explain: "2i、3i 等在筛 2、3 时已经处理过。" },
+      { type: "choice", q: "埃氏筛法的时间复杂度大约是？", options: ["O(n log log n)", "O(n²)", "O(n log n)", "O(n)"], a: 0, explain: "这是它的经典复杂度。" },
+      { type: "choice", q: "外层循环条件写成什么更高效？", options: ["i * i <= n", "i <= n", "i < n", "i <= 2"], a: 0, explain: "超过根号 n 的质数，其平方已经超过范围。" },
+      { type: "choice", q: "筛完后统计质数个数，从几开始统计？", options: ["2", "1", "0", "n"], a: 0, explain: "1 不是质数。" },
+      { type: "judge", q: "判断：筛法适合「一次性求出 n 以内所有质数」。", a: true, explain: "对，这是它的典型场景。" },
+      { type: "judge", q: "判断：1 在筛法里也被当作质数。", a: false, explain: "错，1 既不是质数也不是合数。" },
+      { type: "judge", q: "判断：线性筛（欧拉筛）比埃氏筛更快，是 O(n)。", a: true, explain: "对，每个合数只被划一次。" },
+      { type: "judge", q: "判断：isPrime 数组只需要开到 n。", a: false, explain: "错，要开到 n+1 或更大，注意下标。" }];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！筛法写法和优化点都对了！" :
+          right >= 6 ? "不错！再复习一下就能全对～" :
+          right >= 4 ? "还行，把这一课的重点再看一遍吧！" :
+          "别灰心，重点看第 1 节的代码和「从 i*i 开始」这一句。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+
+    function vRun() {
+      var n = parseInt(document.getElementById("n").value, 10);
+      if (!n || n < 2 || n > 120) { document.getElementById("vOut").textContent = "请输入 2~120"; return; }
+      var p = new Array(n + 1).fill(true);
+      p[0] = p[1] = false;
+      var lines = [];
+      for (var i = 2; i * i <= n; i++) {
+        if (!p[i]) continue;
+        var cut = [];
+        for (var j = i * i; j <= n; j += i) { if (p[j]) cut.push(j); p[j] = false; }
+        if (cut.length) lines.push("用 " + i + " 划掉：" + cut.join(" "));
+      }
+      var primes = [];
+      for (var k = 2; k <= n; k++) if (p[k]) primes.push(k);
+      lines.push("", n + " 以内的质数（共 " + primes.length + " 个）：", primes.join(" "));
+      document.getElementById("vOut").textContent = lines.join("\n");
+      document.getElementById("vCode").textContent =
+        "for (int i = 2; i <= n; i++) isPrime[i] = true;\nfor (int i = 2; i * i <= n; i++)\n    if (isPrime[i])\n        for (int j = i * i; j <= n; j += i)\n            isPrime[j] = false;";
+      document.getElementById("vMsg").textContent = "共筛出 " + primes.length + " 个质数 ✅";
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("vRun").addEventListener("click", vRun);
+      initTabs();
+      initQuiz();
+    });
+
+</script>
+</body>
+</html>

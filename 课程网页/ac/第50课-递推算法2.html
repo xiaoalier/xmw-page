@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第50课 · 递推算法2</title>
+<style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 16px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>第50课 · 递推算法2</h1>
+      <p class="subtitle">二维递推：数字三角形、路径计数</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>二维递推：状态有两个下标</h2>
+<div class="nest-grid"><div class="nest-card c1"><div class="n-name">什么时候用</div><p>答案跟「第几行、第几列」都有关系时，就用 f[i][j]。</p></div><div class="nest-card c2"><div class="n-name">从上一层推下来</div><p>通常是 f[i][j] 由上一行的相邻两个（或左边一格）推出来。</p></div><div class="nest-card c3"><div class="n-name">顺序很重要</div><p>填表要保证「用到的格子已经算过」，一般按行从上往下。</p></div></div><div class="panel"><div class="panel-title"><span class="icon">📌</span>数字三角形：从顶走到底，和最大</div><div class="anno"><pre>// f[i][j]：从顶走到 (i,j) 的最大和
+f[1][1] = a[1][1];
+for (int i = 2; i &lt;= n; i++)
+    for (int j = 1; j &lt;= i; j++)
+        f[i][j] = max(f[i-1][j-1], f[i-1][j]) + a[i][j];
+// 答案 = max(f[n][1..n])</pre></div><p class="mem-note">⚠ 边界 j=1 和 j=i 只有一条来路，`f[i-1][0]`、`f[i-1][i]` 要当作 0 或负无穷处理。</p></div>
+    </section>
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>路径计数：过河卒</h2>
+<div class="panel"><div class="panel-title"><span class="icon">📌</span>只能往右、往下走，问有多少条路</div><div class="anno"><pre>f[0][0] = 1;                       // 起点 1 条路
+for (int i = 0; i &lt;= n; i++)
+    for (int j = 0; j &lt;= m; j++) {
+        if (i == 0 && j == 0) continue;
+        if (i &gt; 0) f[i][j] += f[i-1][j];   // 从上边来
+        if (j &gt; 0) f[i][j] += f[i][j-1];   // 从左边来
+    }</pre></div><p class="mem-note">⚠ 有障碍（马的控制点）时，把那一格标记成 0 条路即可。</p></div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>数字三角形：一路取最大</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔧</span>输入三角形，看每层的最优和怎么推下来（自底向上也一样）</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field"><label>三角形（每行数字，空格分隔）</label>
+              <textarea id="tri" rows="5" style="width:100%;padding:10px;border-radius:10px;border:1px solid #d7dce8;font-family:Consolas,monospace;">7
+3 8
+8 1 0
+2 7 4 4
+4 5 2 6 5</textarea>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="vRun">▶ 运行</button>
+            </div>
+            <div class="conv-msg" id="vMsg">点「运行」，看每一层的最优和…</div>
+            <div class="sim-arr-label" style="margin-top:6px;">对应代码</div>
+            <div class="lp-code"><pre id="vCode">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">各层最优和</div>
+            <div class="console" id="vOut"><span class="muted">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs"><div class="code-tab active" data-tab="t0">数字三角形</div><div class="code-tab" data-tab="t1">自底向上写法</div><div class="code-tab" data-tab="t2">路径计数</div><div class="code-tab" data-tab="t3">易错提醒</div></div>
+<div class="code-content active" id="tab-t0"><div class="code-block"><pre>f[<span class="number">1</span>][<span class="number">1</span>] = a[<span class="number">1</span>][<span class="number">1</span>];
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++)
+    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt;= i; j++)
+        f[i][j] = max(f[i-<span class="number">1</span>][j-<span class="number">1</span>], f[i-<span class="number">1</span>][j]) + a[i][j];</pre></div></div><div class="code-content" id="tab-t1"><div class="code-block"><pre><span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt;= n; j++) f[n][j] = a[n][j];
+<span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt;= <span class="number">1</span>; i--)
+    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt;= i; j++)
+        f[i][j] = max(f[i+<span class="number">1</span>][j], f[i+<span class="number">1</span>][j+<span class="number">1</span>]) + a[i][j];
+cout &lt;&lt; f[<span class="number">1</span>][<span class="number">1</span>];</pre></div></div><div class="code-content" id="tab-t2"><div class="code-block"><pre>f[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>;
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt;= n; i++)
+  <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt;= m; j++) {
+      <span class="keyword">if</span> (i == <span class="number">0</span> &amp;&amp; j == <span class="number">0</span>) <span class="keyword">continue</span>;
+      <span class="keyword">if</span> (i) f[i][j] += f[i-<span class="number">1</span>][j];
+      <span class="keyword">if</span> (j) f[i][j] += f[i][j-<span class="number">1</span>];
+  }</pre></div></div><div class="code-content" id="tab-t3"><div class="code-block"><pre><span class=<span class="string">"comment"</span>>// ⚠ 边界格只有一条来路</span>
+<span class=<span class="string">"comment"</span>>// ⚠ 自底向上时是 f[i+<span class="number">1</span>][j] 和 f[i+<span class="number">1</span>][j+<span class="number">1</span>]</span>
+<span class=<span class="string">"comment"</span>>// ⚠ 路径数可能很大，用 <span class="type">long long</span></span></pre></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">6</span>小贴士</h2>
+      <div class="panel tips-section">
+        <h3>💡 小贴士</h3>
+        <ul>
+          <li>先想清楚 f[i][j] 代表什么。</li>
+          <li>边界格单独处理，别让下标越界。</li>
+          <li>自顶向下用 f[i-1]，自底向上用 f[i+1]，别混。</li>
+          <li>路径计数类题要用 long long。</li>
+          <li>只依赖上一行时，可以用一维滚动数组省内存。</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer><div class="container">信奥 C++ 星辰班 · 第50课 递推算法2</div></footer>
+
+<script>
+
+    var QUIZ_BANK = [{ type: "choice", q: "二维递推的 f[i][j] 通常表示？", options: ["和「第 i 行第 j 列」有关的状态", "第 i 个数字", "数组长度", "循环次数"], a: 0, explain: "两个下标对应两个维度的信息。" },
+      { type: "choice", q: "数字三角形自顶向下时，f[i][j] 由谁推出来？", options: ["上一行的 f[i-1][j-1] 和 f[i-1][j]", "下一行的两个", "同行左右", "f[1][1]"], a: 0, explain: "只能从左上、右上两个格子走下来。" },
+      { type: "choice", q: "自底向上做数字三角形，f[i][j] 由谁推？", options: ["下一行的 f[i+1][j] 和 f[i+1][j+1]", "上一行两个", "同一行左右", "终点"], a: 0, explain: "从下一层往上合并。" },
+      { type: "choice", q: "路径计数题里，如果有障碍格应该怎么处理？", options: ["把那一格的路数设为 0", "跳过不处理", "设成 1", "设成负数"], a: 0, explain: "走不到就是 0 条路。" },
+      { type: "choice", q: "填二维递推表时，最重要的是什么？", options: ["保证用到的格已经算过", "先算右下角", "随机顺序", "必须倒着填"], a: 0, explain: "顺序错了会用到没算的格子。" },
+      { type: "judge", q: "判断：二维递推的边界格往往只有一条来路，需要单独处理。", a: true, explain: "对，否则会越界或算错。" },
+      { type: "judge", q: "判断：数字三角形用自底向上写，最后答案就是 f[1][1]。", a: true, explain: "对，一路合并到顶点。" },
+      { type: "judge", q: "判断：路径计数的结果一定在 int 范围内。", a: false, explain: "错，格子多时路径数会非常大，要用 long long。" },
+      { type: "judge", q: "判断：二维递推一定要开二维数组，不能压缩成一维。", a: false, explain: "错，只依赖上一行时可以用一维滚动数组。" }];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！二维递推也顺了！" :
+          right >= 6 ? "不错！再复习一下就能全对～" :
+          right >= 4 ? "还行，把这一课的重点再看一遍吧！" :
+          "别灰心，重点看第 1 节的数字三角形和第 2 节的路径计数。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+
+    function vRun() {
+      var lines = document.getElementById("tri").value.trim().split("\n");
+      var a = [];
+      lines.forEach(function (l) {
+        var nums = l.trim().split(/\s+/).map(Number).filter(function (x) { return !isNaN(x); });
+        if (nums.length) a.push(nums);
+      });
+      if (!a.length) { document.getElementById("vOut").textContent = "没读到数据"; return; }
+      var n = a.length, f = [], out = [];
+      for (var i = 0; i < n; i++) f.push([]);
+      f[0][0] = a[0][0];
+      out.push("第 1 层：[" + f[0][0] + "]");
+      for (var i = 1; i < n; i++) {
+        for (var j = 0; j <= i; j++) {
+          var up1 = j > 0 ? f[i-1][j-1] : -1e9;
+          var up2 = j <= i - 1 ? f[i-1][j] : -1e9;
+          f[i][j] = Math.max(up1, up2) + a[i][j];
+        }
+        out.push("第 " + (i + 1) + " 层：[" + f[i].join(", ") + "]");
+      }
+      out.push("", "最大路径和：" + Math.max.apply(null, f[n-1]));
+      document.getElementById("vOut").textContent = out.join("\n");
+      document.getElementById("vCode").textContent =
+        "f[1][1] = a[1][1];\nfor (int i = 2; i <= n; i++)\n    for (int j = 1; j <= i; j++)\n        f[i][j] = max(f[i-1][j-1], f[i-1][j]) + a[i][j];";
+      document.getElementById("vMsg").textContent = "共 " + n + " 层，已逐层推出最优和 ✅";
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("vRun").addEventListener("click", vRun);
+      initTabs();
+      initQuiz();
+    });
+
+</script>
+</body>
+</html>
