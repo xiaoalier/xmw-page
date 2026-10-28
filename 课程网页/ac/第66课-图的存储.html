@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第66课 · 图的存储</title>
+<style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 16px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>第66课 · 图的存储</h1>
+      <p class="subtitle">邻接矩阵和邻接表：两种存图方式</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>邻接矩阵：开一张表</h2>
+<div class="nest-grid"><div class="nest-card c1"><div class="n-name">怎么存</div><p>g[u][v] = 1 表示 u 到 v 有边；带权就存权值。</p></div><div class="nest-card c2"><div class="n-name">优点</div><p>判断两点是否相邻 O(1)；写起来最简单。</p></div><div class="nest-card c3"><div class="n-name">缺点</div><p>空间 O(n²)，n 大了（1e5）就爆内存。</p></div></div><div class="panel"><div class="panel-title"><span class="icon">📌</span>写法</div><div class="anno"><pre>int g[1005][1005];
+
+// 加一条无向边
+g[u][v] = 1;
+g[v][u] = 1;
+
+// 带权
+g[u][v] = w;</pre></div><p class="mem-note">⚠ 适合 n ≤ 1000 左右、边比较密的图。</p></div>
+    </section>
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>邻接表：每个点挂一个列表</h2>
+<div class="panel"><div class="panel-title"><span class="icon">📌</span>vector 版本</div><div class="anno"><pre>vector&lt;int&gt; g[100005];
+
+g[u].push_back(v);        // 有向边 u → v
+g[v].push_back(u);        // 无向图再加反向
+
+// 遍历 u 的所有邻居
+for (int v : g[u]) cout &lt;&lt; v &lt;&lt; " ";</pre></div><p class="mem-note">⚠ 空间 O(n + m)，n 到 1e5、1e6 都扛得住，比赛里最常用。</p></div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>两种存图方式对比</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔧</span>输入几条边，看邻接矩阵和邻接表分别长什么样</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field"><label>边（每行：u v）</label>
+              <textarea id="edges" rows="5" style="width:100%;padding:10px;border-radius:10px;border:1px solid #d7dce8;font-family:Consolas,monospace;">1 2
+1 3
+2 4
+3 4</textarea>
+            </div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="vRun">▶ 运行</button>
+            </div>
+            <div class="conv-msg" id="vMsg">点「运行」，看两种存法…</div>
+            <div class="sim-arr-label" style="margin-top:6px;">对应代码</div>
+            <div class="lp-code"><pre id="vCode">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">邻接矩阵 / 邻接表</div>
+            <div class="console" id="vOut"><span class="muted">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs"><div class="code-tab active" data-tab="t0">邻接矩阵</div><div class="code-tab" data-tab="t1">邻接表（vector）</div><div class="code-tab" data-tab="t2">邻接表（数组模拟）</div><div class="code-tab" data-tab="t3">怎么选</div></div>
+<div class="code-content active" id="tab-t0"><div class="code-block"><pre><span class="type">int</span> g[<span class="number">1005</span>][<span class="number">1005</span>];
+g[u][v] = <span class="number">1</span>;
+g[v][u] = <span class="number">1</span>;</pre></div></div><div class="code-content" id="tab-t1"><div class="code-block"><pre>vector&lt;<span class="type">int</span>&gt; g[<span class="number">100005</span>];
+g[u].push_back(v);
+g[v].push_back(u);</pre></div></div><div class="code-content" id="tab-t2"><div class="code-block"><pre><span class="type">int</span> head[N], nxt[M], to[M], tot;
+<span class="keyword">void</span> add(<span class="type">int</span> u, <span class="type">int</span> v) {
+    to[++tot] = v; nxt[tot] = head[u]; head[u] = tot;
+}</pre></div></div><div class="code-content" id="tab-t3"><div class="code-block"><pre><span class=<span class="string">"comment"</span>>// n &lt;= <span class="number">1000</span> 且边多（稠密） → 邻接矩阵</span>
+<span class=<span class="string">"comment"</span>>// n 很大（1e5+） → 邻接表</span></pre></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">6</span>小贴士</h2>
+      <div class="panel tips-section">
+        <h3>💡 小贴士</h3>
+        <ul>
+          <li>小图（n≤1000）可以用邻接矩阵，写起来快。</li>
+          <li>大图（1e5 以上）必须用邻接表。</li>
+          <li>无向图两个方向都要加。</li>
+          <li>带权图在边上存权值。</li>
+          <li>邻接表遍历邻居就是遍历它的边。</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer><div class="container">信奥 C++ 星辰班 · 第66课 图的存储</div></footer>
+
+<script>
+
+    var QUIZ_BANK = [{ type: "choice", q: "邻接矩阵存图的空间是？", options: ["O(n²)", "O(n)", "O(n log n)", "O(m)"], a: 0, explain: "要开 n×n 的表。" },
+      { type: "choice", q: "n = 1e5 时应该用哪种存法？", options: ["邻接表", "邻接矩阵", "都可以", "不能用图"], a: 0, explain: "邻接矩阵会爆内存。" },
+      { type: "choice", q: "无向图用邻接表存边，要怎么做？", options: ["u→v 和 v→u 各加一次", "只加 u→v", "加两次 u→v", "不用加"], a: 0, explain: "两个方向都要存。" },
+      { type: "choice", q: "判断 u、v 是否相邻，哪种存法 O(1)？", options: ["邻接矩阵", "邻接表", "都不行", "都要 O(n)"], a: 0, explain: "直接查 g[u][v]。" },
+      { type: "choice", q: "邻接表遍历一个点的所有邻居，复杂度是？", options: ["O(这个点的度)", "O(n²)", "O(1)", "O(n)"], a: 0, explain: "只走它连出去的边。" },
+      { type: "judge", q: "判断：邻接矩阵适合边很少的稀疏图。", a: false, explain: "错，稀疏图用邻接表更省。" },
+      { type: "judge", q: "判断：带权图可以用邻接矩阵存权值。", a: true, explain: "对，g[u][v] = w。" },
+      { type: "judge", q: "判断：邻接表占用的空间和边数有关。", a: true, explain: "对，O(n+m)。" },
+      { type: "judge", q: "判断：两种存法可以互相转换，结果一样。", a: true, explain: "对，只是存法不同。" }];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！两种存图方式的选择清楚了！" :
+          right >= 6 ? "不错！再复习一下就能全对～" :
+          right >= 4 ? "还行，把这一课的重点再看一遍吧！" :
+          "别灰心，重点看第 2 节的邻接表写法。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+
+    function vRun() {
+      var raw = document.getElementById("edges").value.trim().split("\n");
+      var E = [], mx = 0;
+      raw.forEach(function (l) {
+        var p = l.trim().split(/\s+/).map(Number);
+        if (p.length >= 2 && !isNaN(p[0]) && !isNaN(p[1])) { E.push(p); mx = Math.max(mx, p[0], p[1]); }
+      });
+      if (!E.length) { document.getElementById("vOut").textContent = "没读到边"; return; }
+      var g = [], lines = [];
+      for (var i = 0; i <= mx; i++) { g.push(new Array(mx + 1).fill(0)); }
+      E.forEach(function (p) { g[p[0]][p[1]] = 1; g[p[1]][p[0]] = 1; });
+      lines.push("邻接矩阵（行=起点，列=终点）：");
+      for (var i = 1; i <= mx; i++) lines.push("  " + i + ": " + g[i].slice(1, mx + 1).join(" "));
+      lines.push("", "邻接表：");
+      for (var i = 1; i <= mx; i++) {
+        var nb = [];
+        for (var j = 1; j <= mx; j++) if (g[i][j]) nb.push(j);
+        lines.push("  " + i + " → " + (nb.length ? nb.join(", ") : "（无）"));
+      }
+      lines.push("", "矩阵占 " + (mx + 1) + "×" + (mx + 1) + " 格；邻接表只存 " + E.length * 2 + " 条记录");
+      document.getElementById("vOut").textContent = lines.join("\n");
+      document.getElementById("vCode").textContent =
+        "int g[1005][1005];  g[u][v] = 1;\nvector<int> g2[100005];  g2[u].push_back(v);";
+      document.getElementById("vMsg").textContent = "两种存法都对，但对大数据邻接表更省 ✅";
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("vRun").addEventListener("click", vRun);
+      initTabs();
+      initQuiz();
+    });
+
+</script>
+</body>
+</html>

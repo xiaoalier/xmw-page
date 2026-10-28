@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第69课 · 二叉树的重构</title>
+<style>
+    :root {
+      --bg: #0e1420;
+      --bg-soft: #141b2d;
+      --card: #1a2236;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #4cc2ff;
+      --accent-2: #ff6b9d;
+      --accent-3: #ffb454;
+      --green: #7ee787;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .page-header {
+      padding: 40px 0 30px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(76, 194, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .page-header .subtitle { color: var(--muted); font-size: 16px; }
+    section { margin: 36px 0; }
+    .section-title {
+      font-size: 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .nest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .nest-grid { grid-template-columns: 1fr; } }
+    .nest-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+      transition: all 0.2s ease;
+    }
+    .nest-card:hover { transform: translateY(-3px); border-color: rgba(76, 194, 255, 0.35); }
+    .nest-card .n-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .nest-card.c1 .n-name { color: var(--accent); }
+    .nest-card.c2 .n-name { color: var(--accent-2); }
+    .nest-card.c3 .n-name { color: var(--green); }
+    .nest-card p { font-size: 13px; color: var(--muted); }
+    .nest-card code {
+      font-family: "Consolas", monospace; color: var(--accent-3);
+      background: rgba(255, 180, 84, 0.12);
+      padding: 1px 5px; border-radius: 4px; font-size: 12px;
+    }
+    .anno pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px; color: #c6d0e0; overflow-x: auto;
+    }
+    .anno .k { color: var(--accent-2); }
+    .anno .s { color: var(--green); }
+    .anno .cm { color: var(--muted); }
+    .mem-note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    .mem-note b { color: var(--accent-3); }
+    .conv-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 860px) { .conv-layout { grid-template-columns: 1fr; } }
+    .conv-form { display: flex; flex-direction: column; gap: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 15px; font-family: "Consolas", monospace;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .lab-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+    .conv-msg { font-size: 14px; color: var(--accent-3); min-height: 22px; }
+    .sim-arr-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 700; }
+    .step-final {
+      margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(126, 231, 135, 0.1);
+      border: 1px solid rgba(126, 231, 135, 0.3);
+      font-size: 15px; color: var(--green);
+    }
+    .step-final b { font-family: "Consolas", monospace; font-size: 17px; }
+    .lp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow-x: auto;
+    }
+    .lp-code pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #c6d0e0; white-space: pre-wrap;
+    }
+    .console {
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: "Consolas", monospace;
+      font-size: 16px; color: var(--green);
+      min-height: 50px; white-space: pre-wrap; word-break: break-all;
+    }
+    .console .muted { color: var(--muted); }
+    .control-btn {
+      padding: 10px 18px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .control-btn.primary { background: var(--accent); color: var(--bg); }
+    .control-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .control-btn.secondary {
+      background: rgba(255, 255, 255, 0.1); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .control-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .code-tab {
+      padding: 10px 18px; border-radius: 8px 8px 0 0;
+      background: rgba(255, 255, 255, 0.05); color: var(--muted);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border); border-bottom: none;
+    }
+    .code-tab:hover { background: rgba(255, 255, 255, 0.08); }
+    .code-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 20px; overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 13px; line-height: 1.7; color: #e8eef7;
+    }
+    .code-block .keyword { color: #ff6b9d; }
+    .code-block .type { color: #4cc2ff; }
+    .code-block .string { color: #7ee787; }
+    .code-block .number { color: #ffb454; }
+    .code-block .comment { color: #6b7280; font-style: italic; }
+    .code-block .function { color: #a78bfa; }
+    .code-content { display: none; }
+    .code-content.active { display: block; }
+    .quiz-panel { max-width: 680px; margin: 0 auto; }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-size: 14px; color: var(--muted);
+    }
+    .quiz-progress {
+      width: 100%; height: 8px; background: var(--bg);
+      border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+    }
+    .quiz-progress .fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 4px; transition: width 0.3s ease;
+    }
+    .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 16px; min-height: 44px; }
+    .quiz-question .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+      vertical-align: middle;
+    }
+    .quiz-question .tag.choice { background: rgba(76,194,255,0.16); color: var(--accent); }
+    .quiz-question .tag.judge { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .quiz-opt {
+      text-align: left; padding: 12px 16px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.ok { border-color: var(--green); background: rgba(126,231,135,0.12); color: var(--green); }
+    .quiz-opt.bad { border-color: var(--accent-2); background: rgba(255,107,157,0.12); color: var(--accent-2); }
+    .quiz-opt:disabled { cursor: default; opacity: 0.85; }
+    .quiz-feedback {
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      min-height: 50px; display: none;
+    }
+    .quiz-feedback.right { display: block; background: rgba(126,231,135,0.1); border: 1px solid rgba(126,231,135,0.3); color: var(--green); }
+    .quiz-feedback.wrong { display: block; background: rgba(255,107,157,0.1); border: 1px solid rgba(255,107,157,0.3); color: var(--accent-2); }
+    .quiz-feedback b { font-family: "Consolas", monospace; font-size: 15px; }
+    .quiz-btn {
+      padding: 12px 24px; border: none; border-radius: 999px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .quiz-btn.primary { background: var(--accent); color: var(--bg); }
+    .quiz-btn.primary:hover { background: #5ed0ff; transform: translateY(-2px); }
+    .quiz-btn.ghost { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .quiz-btn.ghost:hover { background: rgba(255,255,255,0.16); }
+    .quiz-score { text-align: center; padding: 30px 20px; }
+    .quiz-score .big { font-size: 48px; font-weight: 900; color: var(--accent-3); margin: 8px 0; }
+    .quiz-score .msg { color: var(--muted); font-size: 15px; margin-bottom: 18px; }
+    .quiz-score .stars { font-size: 26px; letter-spacing: 6px; }
+    .tips-section {
+      background: rgba(126, 231, 135, 0.08);
+      border: 1px solid rgba(126, 231, 135, 0.25);
+      border-radius: var(--radius); padding: 20px; margin: 36px 0;
+    }
+    .tips-section h3 { color: var(--green); margin-bottom: 12px; font-size: 16px; }
+    .tips-section ul { padding-left: 20px; color: #c6d0e0; }
+    .tips-section li { margin-bottom: 8px; font-size: 14px; }
+    .tips-section code {
+      background: rgba(126,231,135,0.15); padding: 2px 6px; border-radius: 4px;
+      font-family: "Consolas", monospace; font-size: 12px; color: var(--green);
+    }
+    .page-footer {
+      text-align: center; padding: 30px 0; margin-top: 40px;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>第69课 · 二叉树的重构</h1>
+      <p class="subtitle">已知两种遍历，还原出整棵树</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2 class="section-title"><span class="badge">1</span>重构的原理</h2>
+<div class="nest-grid"><div class="nest-card c1"><div class="n-name">前序 + 中序</div><p>前序第一个一定是根；在中序里找到这个根，左边是左子树、右边是右子树，递归下去。</p></div><div class="nest-card c2"><div class="n-name">后序 + 中序</div><p>后序最后一个一定是根；同样在中序里切开，递归。</p></div><div class="nest-card c3"><div class="n-name">前序 + 后序不行</div><p>缺了中序，左右子树分不开，答案可能不唯一。</p></div></div><div class="panel"><div class="panel-title"><span class="icon">📌</span>前序+中序 求后序</div><div class="anno"><pre>void build(string pre, string in) {
+    if (pre.empty()) return;
+    char root = pre[0];
+    int k = in.find(root);           // 根在中序里的位置
+    string lp = pre.substr(1, k);    // 左子树的前序
+    string rp = pre.substr(k + 1);   // 右子树的前序
+    string li = in.substr(0, k);     // 左子树的中序
+    string ri = in.substr(k + 1);    // 右子树的中序
+    build(lp, li);
+    build(rp, ri);
+    cout &lt;&lt; root;                    // 后序：最后输出根
+}</pre></div><p class="mem-note">⚠ 关键是 `k = in.find(root)`，把中序切成左右两段。</p></div>
+    </section>
+    <section>
+      <h2 class="section-title"><span class="badge">2</span>为什么要中序</h2>
+<div class="panel"><div class="panel-title"><span class="icon">📌</span>中序提供左右边界</div><p class="mem-note">前序/后序只能告诉你「谁是根」，<b>只有中序能告诉你「根左边是左子树、右边是右子树」</b>。所以必须配中序。</p></div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">3</span>由前序和中序还原</h2>
+      <div class="panel">
+        <div class="panel-title"><span class="icon">🔧</span>输入前序和中序，算出后序（也就还原了树）</div>
+        <div class="conv-layout">
+          <div class="conv-form">
+            <div class="field"><label>前序</label><input id="pre" value="ABDEC"></div>
+            <div class="field"><label>中序</label><input id="in" value="DBEAC"></div>
+            <div class="lab-ops">
+              <button class="control-btn primary" id="vRun">▶ 运行</button>
+            </div>
+            <div class="conv-msg" id="vMsg">点「运行」，看递归怎么切分…</div>
+            <div class="sim-arr-label" style="margin-top:6px;">对应代码</div>
+            <div class="lp-code"><pre id="vCode">--</pre></div>
+          </div>
+          <div>
+            <div class="sim-arr-label">还原过程与后序</div>
+            <div class="console" id="vOut"><span class="muted">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">4</span>C++ 里怎么写</h2>
+      <div class="code-section">
+        <div class="code-tabs"><div class="code-tab active" data-tab="t0">前序+中序 → 后序</div><div class="code-tab" data-tab="t1">后序+中序 → 前序</div><div class="code-tab" data-tab="t2">用节点建树</div><div class="code-tab" data-tab="t3">易错提醒</div></div>
+<div class="code-content active" id="tab-t0"><div class="code-block"><pre><span class="keyword">void</span> build(string pre, string in) {
+    <span class="keyword">if</span> (pre.empty()) <span class="keyword">return</span>;
+    <span class="type">char</span> root = pre[<span class="number">0</span>];
+    <span class="type">int</span> k = in.find(root);
+    build(pre.substr(<span class="number">1</span>, k), in.substr(<span class="number">0</span>, k));
+    build(pre.substr(k + <span class="number">1</span>), in.substr(k + <span class="number">1</span>));
+    cout &lt;&lt; root;
+}</pre></div></div><div class="code-content" id="tab-t1"><div class="code-block"><pre><span class="keyword">void</span> build2(string post, string in) {
+    <span class="keyword">if</span> (post.empty()) <span class="keyword">return</span>;
+    <span class="type">char</span> root = post.back();
+    <span class="type">int</span> k = in.find(root);
+    cout &lt;&lt; root;
+    build2(post.substr(<span class="number">0</span>, k), in.substr(<span class="number">0</span>, k));
+    build2(post.substr(k, post.size() - k - <span class="number">1</span>), in.substr(k + <span class="number">1</span>));
+}</pre></div></div><div class="code-content" id="tab-t2"><div class="code-block"><pre>Node* build(string pre, string in) {
+    <span class="keyword">if</span> (pre.empty()) <span class="keyword">return</span> NULL;
+    Node* p = new Node; p-&gt;val = pre[<span class="number">0</span>];
+    <span class="type">int</span> k = in.find(pre[<span class="number">0</span>]);
+    p-&gt;l = build(pre.substr(<span class="number">1</span>, k), in.substr(<span class="number">0</span>, k));
+    p-&gt;r = build(pre.substr(k+<span class="number">1</span>), in.substr(k+<span class="number">1</span>));
+    <span class="keyword">return</span> p;
+}</pre></div></div><div class="code-content" id="tab-t3"><div class="code-block"><pre><span class=<span class="string">"comment"</span>>// ⚠ 只有前序+后序不能唯一确定</span>
+<span class=<span class="string">"comment"</span>>// ⚠ 切分长度要算对</span>
+<span class=<span class="string">"comment"</span>>// ⚠ 空串要立即返回</span></pre></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">5</span>小测验（选择题 + 判断题）</h2>
+      <div class="panel quiz-panel">
+        <div id="quizBody">
+          <div class="quiz-top">
+            <span id="quizCount">第 1 / 8 题</span>
+            <span id="quizRight">答对 0 题</span>
+          </div>
+          <div class="quiz-progress"><div class="fill" id="quizFill"></div></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeed"></div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="quiz-btn ghost" id="quizNext" style="display: none;">下一题 →</button>
+          </div>
+        </div>
+        <div class="quiz-score" id="quizScore" style="display: none;">
+          <div class="stars" id="quizStars"></div>
+          <div class="big" id="quizScoreBig">0 / 8</div>
+          <div class="msg" id="quizScoreMsg"></div>
+          <button class="quiz-btn primary" id="quizRestart">再玩一次</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="badge">6</span>小贴士</h2>
+      <div class="panel tips-section">
+        <h3>💡 小贴士</h3>
+        <ul>
+          <li>前序第一个、后序最后一个，都是根。</li>
+          <li>必须配中序才能唯一还原。</li>
+          <li>在中序里 find 根，左段是左子树。</li>
+          <li>切分长度时左右要一致。</li>
+          <li>空串立刻返回，是递归的终止条件。</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer><div class="container">信奥 C++ 星辰班 · 第69课 二叉树的重构</div></footer>
+
+<script>
+
+    var QUIZ_BANK = [{ type: "choice", q: "前序遍历的第一个结点一定是？", options: ["根结点", "最左叶子", "最右叶子", "最大值"], a: 0, explain: "前序先访问根。" },
+      { type: "choice", q: "后序遍历的最后一个结点一定是？", options: ["根结点", "最左叶子", "最小值", "叶子"], a: 0, explain: "后序最后访问根。" },
+      { type: "choice", q: "重构二叉树时，必须搭配哪种遍历？", options: ["中序", "层序", "任意一种", "不需要"], a: 0, explain: "中序用来切分左右子树。" },
+      { type: "choice", q: "只有前序和后序，能唯一确定一棵二叉树吗？", options: ["不能", "能", "有时能", "一定有多解但唯一"], a: 0, explain: "缺中序分不开左右。" },
+      { type: "choice", q: "在中序里找到根之后，根的左边是？", options: ["左子树的结点", "右子树", "整棵树", "空"], a: 0, explain: "中序是左根右。" },
+      { type: "judge", q: "判断：前序 + 中序可以唯一还原一棵二叉树。", a: true, explain: "对。" },
+      { type: "judge", q: "判断：还原时递归的终止条件是字符串为空。", a: true, explain: "对。" },
+      { type: "judge", q: "判断：后序 + 中序也能唯一还原。", a: true, explain: "对，后序最后一个是根。" },
+      { type: "judge", q: "判断：切分时左右两段的长度不需要对应。", a: false, explain: "错，前序和中序的左子树长度必须一致。" }];
+
+    function initQuiz() {
+      var questions = [], idx = 0, right = 0, answered = false;
+      var body = document.getElementById("quizBody");
+      var scoreEl = document.getElementById("quizScore");
+      var countEl = document.getElementById("quizCount");
+      var rightEl = document.getElementById("quizRight");
+      var fillEl = document.getElementById("quizFill");
+      var qEl = document.getElementById("quizQuestion");
+      var optEl = document.getElementById("quizOptions");
+      var nextEl = document.getElementById("quizNext");
+      var feedEl = document.getElementById("quizFeed");
+      var starsEl = document.getElementById("quizStars");
+      var scoreBigEl = document.getElementById("quizScoreBig");
+      var scoreMsgEl = document.getElementById("quizScoreMsg");
+
+      function start() {
+        var pool = QUIZ_BANK.slice();
+        questions = [];
+        while (questions.length < 8 && pool.length) {
+          var i = Math.floor(Math.random() * pool.length);
+          questions.push(pool.splice(i, 1)[0]);
+        }
+        idx = 0; right = 0; answered = false;
+        body.style.display = "block";
+        scoreEl.style.display = "none";
+        feedEl.className = "quiz-feedback";
+        nextEl.style.display = "none";
+        show();
+      }
+
+      function show() {
+        var q = questions[idx];
+        countEl.textContent = "第 " + (idx + 1) + " / " + questions.length + " 题";
+        rightEl.textContent = "答对 " + right + " 题";
+        fillEl.style.width = ((idx / questions.length) * 100) + "%";
+        var tag = q.type === "choice"
+          ? '<span class="tag choice">选择题</span>'
+          : '<span class="tag judge">判断题</span>';
+        qEl.innerHTML = tag + q.q;
+        optEl.innerHTML = "";
+        if (q.type === "choice") {
+          q.options.forEach(function (opt, k) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = String.fromCharCode(65 + k) + ". " + opt;
+            b.addEventListener("click", function () { pick(k, b); });
+            optEl.appendChild(b);
+          });
+        } else {
+          [["✅ 对", true], ["❌ 错", false]].forEach(function (pair) {
+            var b = document.createElement("button");
+            b.className = "quiz-opt";
+            b.textContent = pair[0];
+            b.addEventListener("click", function () { pick(pair[1], b); });
+            optEl.appendChild(b);
+          });
+        }
+        feedEl.className = "quiz-feedback";
+        answered = false;
+        nextEl.style.display = "none";
+      }
+
+      function pick(val, btn) {
+        if (answered) return;
+        answered = true;
+        var q = questions[idx];
+        var ok = (val === q.a);
+        if (ok) right++;
+        rightEl.textContent = "答对 " + right + " 题";
+        var correctIdx = q.type === "choice" ? q.a : (q.a ? 0 : 1);
+        Array.prototype.forEach.call(optEl.children, function (c, k) {
+          c.disabled = true;
+          if (k === correctIdx) c.classList.add("ok");
+        });
+        if (!ok) btn.classList.add("bad");
+        var ansText = q.type === "choice"
+          ? String.fromCharCode(65 + q.a) + ". " + q.options[q.a]
+          : (q.a ? "对" : "错");
+        feedEl.className = "quiz-feedback " + (ok ? "right" : "wrong");
+        feedEl.innerHTML = ok
+          ? "答对啦！正确答案：<b>" + ansText + "</b>。" + q.explain
+          : "不对哦，正确答案是 <b>" + ansText + "</b>。" + q.explain;
+        nextEl.style.display = "inline-block";
+        nextEl.textContent = (idx === questions.length - 1) ? "看成绩 →" : "下一题 →";
+      }
+
+      function next() {
+        idx++;
+        if (idx >= questions.length) showScore(); else show();
+      }
+
+      function showScore() {
+        body.style.display = "none";
+        scoreEl.style.display = "block";
+        fillEl.style.width = "100%";
+        scoreBigEl.textContent = right + " / " + questions.length;
+        var stars = right >= 8 ? "⭐⭐⭐⭐⭐" : right >= 6 ? "⭐⭐⭐⭐" : right >= 4 ? "⭐⭐⭐" : right >= 2 ? "⭐⭐" : "⭐";
+        starsEl.textContent = stars;
+        scoreMsgEl.textContent =
+          right === questions.length ? "全对！重构的思路清楚了！" :
+          right >= 6 ? "不错！再复习一下就能全对～" :
+          right >= 4 ? "还行，把这一课的重点再看一遍吧！" :
+          "别灰心，重点看第 1 节的切分代码。";
+      }
+
+      nextEl.addEventListener("click", next);
+      document.getElementById("quizRestart").addEventListener("click", start);
+      start();
+    }
+
+    function initTabs() {
+      document.querySelectorAll(".code-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          document.querySelectorAll(".code-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".code-content").forEach(function (c) { c.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+
+    function vRun() {
+      var pre = document.getElementById("pre").value.trim();
+      var ino = document.getElementById("in").value.trim();
+      if (!pre || !ino) { document.getElementById("vOut").textContent = "请输入前序和中序"; return; }
+      var steps = [], post = [];
+      function build(p, i, depth) {
+        if (!p.length) return;
+        var root = p[0], k = i.indexOf(root);
+        steps.push("  ".repeat(depth) + "根 " + root + "，中序切成 [" + i.slice(0, k) + "] | [" + i.slice(k+1) + "]");
+        build(p.substr(1, k), i.substr(0, k), depth + 1);
+        build(p.substr(k + 1), i.substr(k + 1), depth + 1);
+        post.push(root);
+      }
+      build(pre, ino, 0);
+      document.getElementById("vOut").textContent =
+        "递归切分：\n" + steps.join("\n") + "\n\n后序遍历：" + post.join("");
+      document.getElementById("vCode").textContent =
+        "void build(string pre, string in) {\n    if (pre.empty()) return;\n    char root = pre[0];\n    int k = in.find(root);\n    build(pre.substr(1,k), in.substr(0,k));\n    build(pre.substr(k+1), in.substr(k+1));\n    cout << root;\n}";
+      document.getElementById("vMsg").textContent = "后序已求出，树也就还原了 ✅";
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("vRun").addEventListener("click", vRun);
+      initTabs();
+      initQuiz();
+    });
+
+</script>
+</body>
+</html>
